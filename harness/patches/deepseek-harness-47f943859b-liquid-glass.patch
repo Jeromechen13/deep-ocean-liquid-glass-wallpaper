@@ -1,0 +1,4444 @@
+diff --git a/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.i18n.yaml b/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.i18n.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..8c43a76b9cd1a125ff64253c4e9a1ea22c208e9c
+--- /dev/null
++++ b/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.i18n.yaml
+@@ -0,0 +1,6 @@
++# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
++# side as of the last confirmed-consistent state. Both languages carry equal authority;
++# after editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.md
++2026-08-17-liquid-glass-web-skin.md: edc65bd0972661ebb2b438f6cc0154b130d5152c
++2026-08-17-liquid-glass-web-skin.zh.md: b02e2c0f15cde2fbd17fdf6eda328755db4ccb05
+diff --git a/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.md b/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..edc65bd0972661ebb2b438f6cc0154b130d5152c
+--- /dev/null
++++ b/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.md
+@@ -0,0 +1,27 @@
++# Agent Note: Liquid Glass web skin ownership
++
++Status: implemented
++
++English | [中文](2026-08-17-liquid-glass-web-skin.zh.md)
++
++## Problem
++
++The web profile's experimental wallpaper mounted a canvas in the HTML shell and selected the first canvas on the page. That placed visual state outside Cordis lifecycle ownership, allowed duplicate canvases after reload, and painted an opaque overlay over Harness surfaces.
++
++## Decision
++
++The `dsh-liquid-wallpaper-skin` client plugin owns the `#dsh-liquid-background` canvas, its stylesheet, and the fluid engine's start and cleanup effects. The web frontend serves the existing Pavel Dobryakov simulation as an asset; the plugin loads it only after creating its owned canvas. Theme and component packages own the Liquid Glass tokens and surface material, while conversation content remains DOM text above the fluid layer.
++
++The fluid engine caps device-pixel ratio at 1.5, lowers simulation work for reduced motion, injects slow cyan-to-blue ambient splats, pauses while the document is hidden, and releases the WebGL context during teardown. WebGL and backdrop-filter failures fall back to a static Deep Ocean background and higher-opacity surfaces.
++
++## Alternatives considered
++
++**HTML-owned canvas:** Rejected because it has no plugin unload boundary, races the app's own canvases, and makes HMR duplicate global listeners.
++
++**A WebGL context per glass component:** Rejected because DOM capture and context multiplication would increase GPU cost and couple presentation components to a renderer.
++
++**Opaque recoloring of every component:** Rejected because it hides the fluid world and turns the conversation into a grid of cards; the tokens keep the transcript transparent and reserve stronger material for floating surfaces.
++
++## Consequences
++
++An SVG displacement enhancement was tested on composer and modal surfaces, but browser compositing placed the composer above menus and modal controls. It is therefore disabled in favor of CSS edge reflections, while the preserved `lg_fragment_main.glsl` remains the source for a future shared texture renderer rather than forcing DOM capture into the current slot architecture. The web asset path is part of the frontend build and must remain available to the profile server.
+diff --git a/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.zh.md b/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.zh.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..b02e2c0f15cde2fbd17fdf6eda328755db4ccb05
+--- /dev/null
++++ b/.agents/notes/implemented/architecture/2026-08-17-liquid-glass-web-skin.zh.md
+@@ -0,0 +1,27 @@
++# Agent Note: Liquid Glass web skin ownership
++
++Status: implemented
++
++[English](2026-08-17-liquid-glass-web-skin.md) | 中文
++
++## Problem
++
++Web profile 的实验壁纸把 canvas 挂在 HTML shell 上，并且选取页面中的第一个 canvas。这让视觉状态脱离 Cordis 生命周期，重复加载时会产生重复 canvas 与监听器，还会用不透明 overlay 覆盖 Harness surface。
++
++## Decision
++
++`dsh-liquid-wallpaper-skin` client plugin 负责 `#dsh-liquid-background` canvas、样式表以及 fluid engine 的启动和清理。Web frontend 继续以 asset 提供 Pavel Dobryakov simulation；插件先创建自己拥有的 canvas，再加载该 asset。Theme 和 component package 负责 Liquid Glass tokens 与 surface material，conversation 内容仍然是位于流体之上的正常 DOM 文本。
++
++Fluid engine 将设备像素比限制为 1.5，在 reduced motion 下减少计算，注入缓慢的 cyan-to-blue ambient splat，文档隐藏时暂停，并在卸载时释放 WebGL context。WebGL 或 backdrop-filter 不可用时，回退到静态 Deep Ocean 背景和更高不透明度的 surface。
++
++## Alternatives considered
++
++**由 HTML 拥有 canvas：** 拒绝，因为没有 plugin unload 边界，会与应用自身的 canvas 竞争，并且 HMR 会重复注册全局监听器。
++
++**每个 glass component 创建一个 WebGL context：** 拒绝，因为 DOM capture 和 context 增长会增加 GPU 成本，也会让 presentation component 依赖 renderer。
++
++**给所有 component 使用不透明重染色：** 拒绝，因为这会遮住流体世界，把 conversation 变成卡片网格；tokens 保持 transcript 透明，只给浮层使用更强材质。
++
++## Consequences
++
++曾在 composer 和 modal surface 上测试 SVG displacement 增强，但浏览器合成会让 composer 覆盖菜单和 modal 控件，因此当前禁用该增强并回退到 CSS 边缘反射。保留的 `lg_fragment_main.glsl` 作为未来共享纹理 renderer 的来源，不为当前 slot 架构强行引入 DOM capture。asset 路径属于 frontend build，profile server 必须继续提供它。
+diff --git a/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.i18n.yaml b/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.i18n.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..7024cda5c9d26ee43281b32676500bf8cdae61ae
+--- /dev/null
++++ b/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.i18n.yaml
+@@ -0,0 +1,6 @@
++# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
++# side as of the last confirmed-consistent state. Both languages carry equal authority;
++# after editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.md
++2026-08-18-liquid-glass-runtime-controls.md: 8a1c15891079f02008c2fae7a2c98f817e2070d1
++2026-08-18-liquid-glass-runtime-controls.zh.md: dac88d8219dc0051d0143645440430866643b44e
+diff --git a/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.md b/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..8a1c15891079f02008c2fae7a2c98f817e2070d1
+--- /dev/null
++++ b/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.md
+@@ -0,0 +1,33 @@
++# Agent Note: Host-backed Liquid Glass runtime controls
++
++Status: implemented
++
++English | [中文](2026-08-18-liquid-glass-runtime-controls.zh.md)
++
++## Problem
++
++The Deep Ocean skin has tunable Fluid constants but no product-owned control path. Editing the public script or an out-of-tree skin bundle makes brightness changes immediate only after a reload, provides no validation, and cannot preserve one preference across the Sidebar and Settings views. Recreating the renderer for every control change would also risk duplicate Canvas nodes, listeners, and WebGL contexts.
++
++## Decision
++
++`@deepseek-ai/dsh-client-ui-liquid-glass` owns the `ui-liquid-glass` Settings namespace, one browser controller, and both UI entries. `sidebar.footer.action` carries the compact high-frequency controls; `settings.general.item` carries all presentation, palette, and quality controls. Both entries receive the same observable state and callbacks through the slot inject hooks compartment.
++
++The Host API Proxy includes `ui-liquid-glass` in its explicit Web settings allowlist, so loopback browsers can describe and mutate the registered section without exposing unrelated Settings namespaces.
++
++The controller owns `#dsh-liquid-background`, `/fluid-wallpaper-script.js`, delayed Host writes, and the public Fluid runtime object. Slider input updates the shared snapshot synchronously, coalesces Canvas and engine changes to one animation frame, and persists after 180 ms without sending one Settings mutation per pointer event. Reset clears user fields instead of writing default values, so a deployment can replace its composition defaults later.
++
++The Fluid runtime exposes bounded normalized motion, pointer, Bloom, palette, quality, and enable controls. Quality changes reuse its single WebGL context and rebuild framebuffers. Disable and hidden-tab states stop the animation-frame chain; disposal releases listeners, framebuffers through context loss, the script, and the Canvas. CSS owns light-mode attenuation and the static Deep Ocean fallback.
++
++## Alternatives considered
++
++**Keep manual source edits.** This leaves no discoverable UI, validation, persistence, or shared state and requires a reload for every comparison.
++
++**Store values only in localStorage.** This would bypass the Harness Settings owner, diverge across browsers and ports, and make reset semantics independent from deployment defaults.
++
++**Let the out-of-tree skin own the controls.** A handwritten external bundle cannot participate in the typed slot and Settings APIs without duplicating the in-tree client architecture. The compatibility skin defers when the in-tree owner is active.
++
++**Create a WebGL context per refracting component.** The controls tune one shared Fluid renderer. Composer and overlay refraction remain CSS Glass until a shared texture-based refraction pass can preserve DOM hit testing.
++
++## Consequences
++
++Fluid brightness and motion become live, validated product preferences with one source of truth and two purpose-specific views. The browser still owns one Canvas and one WebGL context, while quality changes have an explicit framebuffer rebuild cost. The new package adds a Host settings namespace and a browser plugin to the shipped Web roster. Palette transitions remain gradual because existing dye dissipates instead of being cleared.
+diff --git a/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.zh.md b/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.zh.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..dac88d8219dc0051d0143645440430866643b44e
+--- /dev/null
++++ b/.agents/notes/implemented/feature/2026-08-18-liquid-glass-runtime-controls.zh.md
+@@ -0,0 +1,33 @@
++# Agent Note: Host 支持的 Liquid Glass 运行时控制
++
++Status: implemented
++
++[English](2026-08-18-liquid-glass-runtime-controls.md) | 中文
++
++## Problem
++
++Deep Ocean 皮肤包含可调的 Fluid 常量，但没有产品拥有的控制路径。直接修改公共脚本或仓库外皮肤包，只能在重载后看到亮度变化，没有校验，也无法让 Sidebar 与 Settings 视图共享同一份偏好。每次控制变化都重建渲染器还会产生重复 Canvas、监听器和 WebGL Context 的风险。
++
++## Decision
++
++`@deepseek-ai/dsh-client-ui-liquid-glass` 拥有 `ui-liquid-glass` Settings 命名空间、唯一的浏览器控制器和两个 UI 入口。`sidebar.footer.action` 承载高频快捷控制，`settings.general.item` 承载完整的显示、配色与质量控制。两个入口通过 Slot Inject 的 Hooks 区域接收同一个可观察状态与回调。
++
++Host API Proxy 将 `ui-liquid-glass` 纳入显式 Web Settings allowlist，使回环浏览器能够描述和修改已注册分节，同时不会暴露其他 Settings namespace。
++
++控制器拥有 `#dsh-liquid-background`、`/fluid-wallpaper-script.js`、延迟 Host 写入和公开的 Fluid 运行时对象。滑杆输入会同步更新共享快照，把 Canvas 与引擎更新合并到一个动画帧，并在 180 ms 后持久化，避免每个指针事件都发送 Settings Mutation。重置会清除用户字段，而不是写入默认值，因此部署以后仍能替换组合默认值。
++
++Fluid 运行时公开受限的标准化运动、鼠标、Bloom、配色、质量与启用控制。质量切换复用唯一的 WebGL Context 并重建 framebuffer。关闭效果和隐藏标签页会停止动画帧链；卸载会释放监听器、通过 Context Loss 释放 framebuffer，并移除脚本和 Canvas。CSS 负责浅色模式衰减与静态 Deep Ocean 降级背景。
++
++## Alternatives considered
++
++**保留手动源码修改。** 这种方式没有可发现的 UI、校验、持久化或共享状态，而且每次比较都需要重载。
++
++**只把数值存入 localStorage。** 这会绕过 Harness Settings 所有者，在不同浏览器和端口之间产生偏差，并让重置语义脱离部署默认值。
++
++**让仓库外皮肤拥有控件。** 手写的外部 Bundle 无法在不复制仓库内 Client 架构的情况下参与类型化 Slot 与 Settings API；仓库内所有者激活时，兼容皮肤会让出所有权。
++
++**为每个折射组件创建 WebGL Context。** 控件只调整一个共享 Fluid Renderer。Composer 与浮层继续使用 CSS Glass，直到共享纹理折射 Pass 能够保持 DOM 命中测试。
++
++## Consequences
++
++Fluid 亮度与运动成为实时、受校验的产品偏好，并通过一个数据来源提供两个用途明确的视图。浏览器仍只拥有一个 Canvas 和一个 WebGL Context，而质量切换具有明确的 framebuffer 重建成本。新包向发布的 Web Roster 添加一个 Host Settings 命名空间和一个浏览器插件。配色切换保持渐进，因为已有染料会消散而不是被清空。
+diff --git a/apps/web/public/fluid-wallpaper-script.js b/apps/web/public/fluid-wallpaper-script.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..bca386f51518cbf85fe1c5cd5b9fd20a5eeecd59
+--- /dev/null
++++ b/apps/web/public/fluid-wallpaper-script.js
+@@ -0,0 +1,1737 @@
++/*
++MIT License
++
++Copyright (c) 2017 Pavel Dobryakov
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
++*/
++
++'use strict';
++
++// Simulation section — wrapped in an IIFE with full fault tolerance:
++// the fluid backdrop must never break the host GUI if WebGL is unavailable.
++(() => {
++    try {
++
++const canvas = document.getElementById('dsh-liquid-background');
++if (!(canvas instanceof HTMLCanvasElement))
++    throw new Error('owned #dsh-liquid-background canvas not found');
++const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
++resizeCanvas();
++
++const QUALITY_PRESETS = {
++    eco: { sim: 96, dye: 512, pressure: 10, bloomIterations: 3 },
++    balanced: { sim: 128, dye: 1024, pressure: 16, bloomIterations: 5 },
++    high: { sim: 192, dye: 1024, pressure: 20, bloomIterations: 6 },
++};
++
++const PALETTES = {
++    abyss: { hMin: 0.56, hRange: 0.07, sMin: 0.72, sRange: 0.16, vMin: 0.20, vRange: 0.26, rgb: [0.42, 0.68, 0.86] },
++    ocean: { hMin: 0.52, hRange: 0.10, sMin: 0.82, sRange: 0.14, vMin: 0.32, vRange: 0.34, rgb: [0.55, 0.82, 0.92] },
++    cyan: { hMin: 0.49, hRange: 0.07, sMin: 0.84, sRange: 0.13, vMin: 0.38, vRange: 0.38, rgb: [0.58, 0.92, 1.0] },
++};
++
++let runtimeConfig = {
++    flowSpeed: 0.60,
++    pointerForce: 0.55,
++    bloom: 0.30,
++    palette: 'ocean',
++    quality: reducedMotion ? 'eco' : 'balanced',
++};
++let surfaceEnabled = true;
++
++let config = {
++    SIM_RESOLUTION: reducedMotion ? 96 : 128,
++    DYE_RESOLUTION: reducedMotion ? 512 : 1024,
++    CAPTURE_RESOLUTION: 512,
++    DENSITY_DISSIPATION: reducedMotion ? 0.32 : 0.18,
++    VELOCITY_DISSIPATION: 0.18,
++    PRESSURE: 0.8,
++    PRESSURE_ITERATIONS: reducedMotion ? 10 : 16,
++    CURL: 22,
++    SPLAT_RADIUS: 0.18,
++    SPLAT_FORCE: reducedMotion ? 900 : 2600,
++    SHADING: true,
++    COLORFUL: false,
++    COLOR_UPDATE_SPEED: 10,
++    PAUSED: false,
++    BACK_COLOR: { r: 3, g: 7, b: 18 },
++    TRANSPARENT: false,
++    BLOOM: true,
++    BLOOM_ITERATIONS: reducedMotion ? 3 : 5,
++    BLOOM_RESOLUTION: 256,
++    BLOOM_INTENSITY: reducedMotion ? 0.04 : 0.074,
++    BLOOM_THRESHOLD: 0.84,
++    BLOOM_SOFT_KNEE: 0.55,
++    SUNRAYS: false,
++    SUNRAYS_RESOLUTION: 196,
++    SUNRAYS_WEIGHT: 1.0,
++    AMBIENT_FLOW: true,
++    AMBIENT_FLOW_INTERVAL: reducedMotion ? 2.8 : 1.25,
++    AMBIENT_FLOW_STRENGTH: reducedMotion ? 28 : 72,
++    AMBIENT_DYE_INTENSITY: reducedMotion ? 0.16 : 0.36,
++}
++
++function pointerPrototype () {
++    this.id = -1;
++    this.texcoordX = 0;
++    this.texcoordY = 0;
++    this.prevTexcoordX = 0;
++    this.prevTexcoordY = 0;
++    this.deltaX = 0;
++    this.deltaY = 0;
++    this.down = false;
++    this.moved = false;
++    this.hoverInitialized = false;
++    this.color = { r: 0.01, g: 0.18, b: 0.42 };
++}
++
++let pointers = [];
++let splatStack = [];
++pointers.push(new pointerPrototype());
++
++const { gl, ext } = getWebGLContext(canvas);
++
++if (!ext.supportLinearFiltering) {
++    config.DYE_RESOLUTION = 512;
++    config.SHADING = false;
++    config.BLOOM = false;
++    config.SUNRAYS = false;
++}
++
++function getWebGLContext (canvas) {
++    const params = { alpha: true, depth: false, stencil: false, antialias: false, preserveDrawingBuffer: false };
++
++    let gl = canvas.getContext('webgl2', params);
++    const isWebGL2 = !!gl;
++    if (!isWebGL2)
++        gl = canvas.getContext('webgl', params) || canvas.getContext('experimental-webgl', params);
++
++    let halfFloat;
++    let supportLinearFiltering;
++    if (isWebGL2) {
++        gl.getExtension('EXT_color_buffer_float');
++        supportLinearFiltering = gl.getExtension('OES_texture_float_linear');
++    } else {
++        halfFloat = gl.getExtension('OES_texture_half_float');
++        supportLinearFiltering = gl.getExtension('OES_texture_half_float_linear');
++    }
++
++    gl.clearColor(0.0, 0.0, 0.0, 1.0);
++
++    const halfFloatTexType = isWebGL2 ? gl.HALF_FLOAT : halfFloat.HALF_FLOAT_OES;
++    let formatRGBA;
++    let formatRG;
++    let formatR;
++
++    if (isWebGL2)
++    {
++        formatRGBA = getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, halfFloatTexType);
++        formatRG = getSupportedFormat(gl, gl.RG16F, gl.RG, halfFloatTexType);
++        formatR = getSupportedFormat(gl, gl.R16F, gl.RED, halfFloatTexType);
++    }
++    else
++    {
++        formatRGBA = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
++        formatRG = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
++        formatR = getSupportedFormat(gl, gl.RGBA, gl.RGBA, halfFloatTexType);
++    }
++
++    return {
++        gl,
++        ext: {
++            formatRGBA,
++            formatRG,
++            formatR,
++            halfFloatTexType,
++            supportLinearFiltering
++        }
++    };
++}
++
++function getSupportedFormat (gl, internalFormat, format, type)
++{
++    if (!supportRenderTextureFormat(gl, internalFormat, format, type))
++    {
++        switch (internalFormat)
++        {
++            case gl.R16F:
++                return getSupportedFormat(gl, gl.RG16F, gl.RG, type);
++            case gl.RG16F:
++                return getSupportedFormat(gl, gl.RGBA16F, gl.RGBA, type);
++            default:
++                return null;
++        }
++    }
++
++    return {
++        internalFormat,
++        format
++    }
++}
++
++function supportRenderTextureFormat (gl, internalFormat, format, type) {
++    let texture = gl.createTexture();
++    gl.bindTexture(gl.TEXTURE_2D, texture);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
++    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, 4, 4, 0, format, type, null);
++
++    let fbo = gl.createFramebuffer();
++    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
++    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
++
++    let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
++    return status == gl.FRAMEBUFFER_COMPLETE;
++}
++
++function captureScreenshot () {
++    let res = getResolution(config.CAPTURE_RESOLUTION);
++    let target = createFBO(res.width, res.height, ext.formatRGBA.internalFormat, ext.formatRGBA.format, ext.halfFloatTexType, gl.NEAREST);
++    render(target);
++
++    let texture = framebufferToTexture(target);
++    texture = normalizeTexture(texture, target.width, target.height);
++
++    let captureCanvas = textureToCanvas(texture, target.width, target.height);
++    let datauri = captureCanvas.toDataURL();
++    downloadURI('fluid.png', datauri);
++    URL.revokeObjectURL(datauri);
++}
++
++function framebufferToTexture (target) {
++    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
++    let length = target.width * target.height * 4;
++    let texture = new Float32Array(length);
++    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.FLOAT, texture);
++    return texture;
++}
++
++function normalizeTexture (texture, width, height) {
++    let result = new Uint8Array(texture.length);
++    let id = 0;
++    for (let i = height - 1; i >= 0; i--) {
++        for (let j = 0; j < width; j++) {
++            let nid = i * width * 4 + j * 4;
++            result[nid + 0] = clamp01(texture[id + 0]) * 255;
++            result[nid + 1] = clamp01(texture[id + 1]) * 255;
++            result[nid + 2] = clamp01(texture[id + 2]) * 255;
++            result[nid + 3] = clamp01(texture[id + 3]) * 255;
++            id += 4;
++        }
++    }
++    return result;
++}
++
++function clamp01 (input) {
++    return Math.min(Math.max(input, 0), 1);
++}
++
++function textureToCanvas (texture, width, height) {
++    let captureCanvas = document.createElement('canvas');
++    let ctx = captureCanvas.getContext('2d');
++    captureCanvas.width = width;
++    captureCanvas.height = height;
++
++    let imageData = ctx.createImageData(width, height);
++    imageData.data.set(texture);
++    ctx.putImageData(imageData, 0, 0);
++
++    return captureCanvas;
++}
++
++function downloadURI (filename, uri) {
++    let link = document.createElement('a');
++    link.download = filename;
++    link.href = uri;
++    document.body.appendChild(link);
++    link.click();
++    document.body.removeChild(link);
++}
++
++class Material {
++    constructor (vertexShader, fragmentShaderSource) {
++        this.vertexShader = vertexShader;
++        this.fragmentShaderSource = fragmentShaderSource;
++        this.programs = [];
++        this.activeProgram = null;
++        this.uniforms = [];
++    }
++
++    setKeywords (keywords) {
++        let hash = 0;
++        for (let i = 0; i < keywords.length; i++)
++            hash += hashCode(keywords[i]);
++
++        let program = this.programs[hash];
++        if (program == null)
++        {
++            let fragmentShader = compileShader(gl.FRAGMENT_SHADER, this.fragmentShaderSource, keywords);
++            program = createProgram(this.vertexShader, fragmentShader);
++            this.programs[hash] = program;
++        }
++
++        if (program == this.activeProgram) return;
++
++        this.uniforms = getUniforms(program);
++        this.activeProgram = program;
++    }
++
++    bind () {
++        gl.useProgram(this.activeProgram);
++    }
++}
++
++class Program {
++    constructor (vertexShader, fragmentShader) {
++        this.uniforms = {};
++        this.program = createProgram(vertexShader, fragmentShader);
++        this.uniforms = getUniforms(this.program);
++    }
++
++    bind () {
++        gl.useProgram(this.program);
++    }
++}
++
++function createProgram (vertexShader, fragmentShader) {
++    let program = gl.createProgram();
++    gl.attachShader(program, vertexShader);
++    gl.attachShader(program, fragmentShader);
++    gl.linkProgram(program);
++
++    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
++        console.trace(gl.getProgramInfoLog(program));
++
++    return program;
++}
++
++function getUniforms (program) {
++    let uniforms = [];
++    let uniformCount = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
++    for (let i = 0; i < uniformCount; i++) {
++        let uniformName = gl.getActiveUniform(program, i).name;
++        uniforms[uniformName] = gl.getUniformLocation(program, uniformName);
++    }
++    return uniforms;
++}
++
++function compileShader (type, source, keywords) {
++    source = addKeywords(source, keywords);
++
++    const shader = gl.createShader(type);
++    gl.shaderSource(shader, source);
++    gl.compileShader(shader);
++
++    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
++        console.trace(gl.getShaderInfoLog(shader));
++
++    return shader;
++};
++
++function addKeywords (source, keywords) {
++    if (keywords == null) return source;
++    let keywordsString = '';
++    keywords.forEach(keyword => {
++        keywordsString += '#define ' + keyword + '\n';
++    });
++    return keywordsString + source;
++}
++
++const baseVertexShader = compileShader(gl.VERTEX_SHADER, `
++    precision highp float;
++
++    attribute vec2 aPosition;
++    varying vec2 vUv;
++    varying vec2 vL;
++    varying vec2 vR;
++    varying vec2 vT;
++    varying vec2 vB;
++    uniform vec2 texelSize;
++
++    void main () {
++        vUv = aPosition * 0.5 + 0.5;
++        vL = vUv - vec2(texelSize.x, 0.0);
++        vR = vUv + vec2(texelSize.x, 0.0);
++        vT = vUv + vec2(0.0, texelSize.y);
++        vB = vUv - vec2(0.0, texelSize.y);
++        gl_Position = vec4(aPosition, 0.0, 1.0);
++    }
++`);
++
++const blurVertexShader = compileShader(gl.VERTEX_SHADER, `
++    precision highp float;
++
++    attribute vec2 aPosition;
++    varying vec2 vUv;
++    varying vec2 vL;
++    varying vec2 vR;
++    uniform vec2 texelSize;
++
++    void main () {
++        vUv = aPosition * 0.5 + 0.5;
++        float offset = 1.33333333;
++        vL = vUv - texelSize * offset;
++        vR = vUv + texelSize * offset;
++        gl_Position = vec4(aPosition, 0.0, 1.0);
++    }
++`);
++
++const blurShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying vec2 vUv;
++    varying vec2 vL;
++    varying vec2 vR;
++    uniform sampler2D uTexture;
++
++    void main () {
++        vec4 sum = texture2D(uTexture, vUv) * 0.29411764;
++        sum += texture2D(uTexture, vL) * 0.35294117;
++        sum += texture2D(uTexture, vR) * 0.35294117;
++        gl_FragColor = sum;
++    }
++`);
++
++const copyShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying highp vec2 vUv;
++    uniform sampler2D uTexture;
++
++    void main () {
++        gl_FragColor = texture2D(uTexture, vUv);
++    }
++`);
++
++const clearShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying highp vec2 vUv;
++    uniform sampler2D uTexture;
++    uniform float value;
++
++    void main () {
++        gl_FragColor = value * texture2D(uTexture, vUv);
++    }
++`);
++
++const colorShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++
++    varying vec2 vUv;
++    uniform vec4 color;
++    uniform vec2 gridScale;
++
++    void main () {
++        vec3 bg = color.rgb;
++        // 极淡海洋测绘图网格：细线 + 十字节点，青蓝色微光
++        vec2 cell = vUv * gridScale;
++        vec2 cellFrac = fract(cell);
++        vec2 cellDist = min(cellFrac, 1.0 - cellFrac);
++        float lineWidth = 0.012;
++        float grid = smoothstep(lineWidth, 0.0, min(cellDist.x, cellDist.y));
++        // 十字节点：在格点中心加一个更亮的点
++        vec2 nodeDist = abs(cellFrac - 0.5);
++        float node = smoothstep(0.09, 0.0, max(nodeDist.x, nodeDist.y));
++        vec3 gridColor = vec3(0.30, 0.62, 0.95);
++        vec3 outColor = bg + grid * gridColor * 0.06 + node * gridColor * 0.10;
++        gl_FragColor = vec4(outColor, 1.0);
++    }
++`);
++
++const checkerboardShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision highp float;
++    precision highp sampler2D;
++
++    varying vec2 vUv;
++    uniform sampler2D uTexture;
++    uniform float aspectRatio;
++
++    #define SCALE 25.0
++
++    void main () {
++        vec2 uv = floor(vUv * SCALE * vec2(aspectRatio, 1.0));
++        float v = mod(uv.x + uv.y, 2.0);
++        v = v * 0.1 + 0.8;
++        gl_FragColor = vec4(vec3(v), 1.0);
++    }
++`);
++
++const displayShaderSource = `
++    precision highp float;
++    precision highp sampler2D;
++
++    varying vec2 vUv;
++    varying vec2 vL;
++    varying vec2 vR;
++    varying vec2 vT;
++    varying vec2 vB;
++    uniform sampler2D uTexture;
++    uniform sampler2D uBloom;
++    uniform sampler2D uSunrays;
++    uniform sampler2D uDithering;
++    uniform vec2 ditherScale;
++    uniform vec2 texelSize;
++
++    vec3 linearToGamma (vec3 color) {
++        color = max(color, vec3(0));
++        return max(1.055 * pow(color, vec3(0.416666667)) - 0.055, vec3(0));
++    }
++
++    void main () {
++        vec3 c = texture2D(uTexture, vUv).rgb;
++
++    #ifdef SHADING
++        vec3 lc = texture2D(uTexture, vL).rgb;
++        vec3 rc = texture2D(uTexture, vR).rgb;
++        vec3 tc = texture2D(uTexture, vT).rgb;
++        vec3 bc = texture2D(uTexture, vB).rgb;
++
++        float dx = length(rc) - length(lc);
++        float dy = length(tc) - length(bc);
++
++        vec3 n = normalize(vec3(dx, dy, length(texelSize)));
++        vec3 l = vec3(0.0, 0.0, 1.0);
++
++        float diffuse = clamp(dot(n, l) + 0.7, 0.7, 1.0);
++        c *= diffuse;
++    #endif
++
++    #ifdef BLOOM
++        vec3 bloom = texture2D(uBloom, vUv).rgb;
++    #endif
++
++    #ifdef SUNRAYS
++        float sunrays = texture2D(uSunrays, vUv).r;
++        c *= sunrays;
++    #ifdef BLOOM
++        bloom *= sunrays;
++    #endif
++    #endif
++
++    #ifdef BLOOM
++        float noise = texture2D(uDithering, vUv * ditherScale).r;
++        noise = noise * 2.0 - 1.0;
++        bloom += noise / 255.0;
++        bloom = linearToGamma(bloom);
++        c += bloom;
++    #endif
++
++        float a = max(c.r, max(c.g, c.b));
++        gl_FragColor = vec4(c, a);
++    }
++`;
++
++const bloomPrefilterShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying vec2 vUv;
++    uniform sampler2D uTexture;
++    uniform vec3 curve;
++    uniform float threshold;
++
++    void main () {
++        vec3 c = texture2D(uTexture, vUv).rgb;
++        float br = max(c.r, max(c.g, c.b));
++        float rq = clamp(br - curve.x, 0.0, curve.y);
++        rq = curve.z * rq * rq;
++        c *= max(rq, br - threshold) / max(br, 0.0001);
++        gl_FragColor = vec4(c, 0.0);
++    }
++`);
++
++const bloomBlurShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying vec2 vL;
++    varying vec2 vR;
++    varying vec2 vT;
++    varying vec2 vB;
++    uniform sampler2D uTexture;
++
++    void main () {
++        vec4 sum = vec4(0.0);
++        sum += texture2D(uTexture, vL);
++        sum += texture2D(uTexture, vR);
++        sum += texture2D(uTexture, vT);
++        sum += texture2D(uTexture, vB);
++        sum *= 0.25;
++        gl_FragColor = sum;
++    }
++`);
++
++const bloomFinalShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying vec2 vL;
++    varying vec2 vR;
++    varying vec2 vT;
++    varying vec2 vB;
++    uniform sampler2D uTexture;
++    uniform float intensity;
++
++    void main () {
++        vec4 sum = vec4(0.0);
++        sum += texture2D(uTexture, vL);
++        sum += texture2D(uTexture, vR);
++        sum += texture2D(uTexture, vT);
++        sum += texture2D(uTexture, vB);
++        sum *= 0.25;
++        gl_FragColor = sum * intensity;
++    }
++`);
++
++const sunraysMaskShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision highp float;
++    precision highp sampler2D;
++
++    varying vec2 vUv;
++    uniform sampler2D uTexture;
++
++    void main () {
++        vec4 c = texture2D(uTexture, vUv);
++        float br = max(c.r, max(c.g, c.b));
++        c.a = 1.0 - min(max(br * 20.0, 0.0), 0.8);
++        gl_FragColor = c;
++    }
++`);
++
++const sunraysShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision highp float;
++    precision highp sampler2D;
++
++    varying vec2 vUv;
++    uniform sampler2D uTexture;
++    uniform float weight;
++
++    #define ITERATIONS 16
++
++    void main () {
++        float Density = 0.3;
++        float Decay = 0.95;
++        float Exposure = 0.7;
++
++        vec2 coord = vUv;
++        vec2 dir = vUv - 0.5;
++
++        dir *= 1.0 / float(ITERATIONS) * Density;
++        float illuminationDecay = 1.0;
++
++        float color = texture2D(uTexture, vUv).a;
++
++        for (int i = 0; i < ITERATIONS; i++)
++        {
++            coord -= dir;
++            float col = texture2D(uTexture, coord).a;
++            color += col * illuminationDecay * weight;
++            illuminationDecay *= Decay;
++        }
++
++        gl_FragColor = vec4(color * Exposure, 0.0, 0.0, 1.0);
++    }
++`);
++
++const splatShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision highp float;
++    precision highp sampler2D;
++
++    varying vec2 vUv;
++    uniform sampler2D uTarget;
++    uniform float aspectRatio;
++    uniform vec3 color;
++    uniform vec2 point;
++    uniform float radius;
++
++    void main () {
++        vec2 p = vUv - point.xy;
++        p.x *= aspectRatio;
++        vec3 splat = exp(-dot(p, p) / radius) * color;
++        vec3 base = texture2D(uTarget, vUv).xyz;
++        gl_FragColor = vec4(base + splat, 1.0);
++    }
++`);
++
++const advectionShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision highp float;
++    precision highp sampler2D;
++
++    varying vec2 vUv;
++    uniform sampler2D uVelocity;
++    uniform sampler2D uSource;
++    uniform vec2 texelSize;
++    uniform vec2 dyeTexelSize;
++    uniform float dt;
++    uniform float dissipation;
++
++    vec4 bilerp (sampler2D sam, vec2 uv, vec2 tsize) {
++        vec2 st = uv / tsize - 0.5;
++
++        vec2 iuv = floor(st);
++        vec2 fuv = fract(st);
++
++        vec4 a = texture2D(sam, (iuv + vec2(0.5, 0.5)) * tsize);
++        vec4 b = texture2D(sam, (iuv + vec2(1.5, 0.5)) * tsize);
++        vec4 c = texture2D(sam, (iuv + vec2(0.5, 1.5)) * tsize);
++        vec4 d = texture2D(sam, (iuv + vec2(1.5, 1.5)) * tsize);
++
++        return mix(mix(a, b, fuv.x), mix(c, d, fuv.x), fuv.y);
++    }
++
++    void main () {
++    #ifdef MANUAL_FILTERING
++        vec2 coord = vUv - dt * bilerp(uVelocity, vUv, texelSize).xy * texelSize;
++        vec4 result = bilerp(uSource, coord, dyeTexelSize);
++    #else
++        vec2 coord = vUv - dt * texture2D(uVelocity, vUv).xy * texelSize;
++        vec4 result = texture2D(uSource, coord);
++    #endif
++        float decay = 1.0 + dissipation * dt;
++        gl_FragColor = result / decay;
++    }`,
++    ext.supportLinearFiltering ? null : ['MANUAL_FILTERING']
++);
++
++const divergenceShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying highp vec2 vUv;
++    varying highp vec2 vL;
++    varying highp vec2 vR;
++    varying highp vec2 vT;
++    varying highp vec2 vB;
++    uniform sampler2D uVelocity;
++
++    void main () {
++        float L = texture2D(uVelocity, vL).x;
++        float R = texture2D(uVelocity, vR).x;
++        float T = texture2D(uVelocity, vT).y;
++        float B = texture2D(uVelocity, vB).y;
++
++        vec2 C = texture2D(uVelocity, vUv).xy;
++        if (vL.x < 0.0) { L = -C.x; }
++        if (vR.x > 1.0) { R = -C.x; }
++        if (vT.y > 1.0) { T = -C.y; }
++        if (vB.y < 0.0) { B = -C.y; }
++
++        float div = 0.5 * (R - L + T - B);
++        gl_FragColor = vec4(div, 0.0, 0.0, 1.0);
++    }
++`);
++
++const curlShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying highp vec2 vUv;
++    varying highp vec2 vL;
++    varying highp vec2 vR;
++    varying highp vec2 vT;
++    varying highp vec2 vB;
++    uniform sampler2D uVelocity;
++
++    void main () {
++        float L = texture2D(uVelocity, vL).y;
++        float R = texture2D(uVelocity, vR).y;
++        float T = texture2D(uVelocity, vT).x;
++        float B = texture2D(uVelocity, vB).x;
++        float vorticity = R - L - T + B;
++        gl_FragColor = vec4(0.5 * vorticity, 0.0, 0.0, 1.0);
++    }
++`);
++
++const vorticityShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision highp float;
++    precision highp sampler2D;
++
++    varying vec2 vUv;
++    varying vec2 vL;
++    varying vec2 vR;
++    varying vec2 vT;
++    varying vec2 vB;
++    uniform sampler2D uVelocity;
++    uniform sampler2D uCurl;
++    uniform float curl;
++    uniform float dt;
++
++    void main () {
++        float L = texture2D(uCurl, vL).x;
++        float R = texture2D(uCurl, vR).x;
++        float T = texture2D(uCurl, vT).x;
++        float B = texture2D(uCurl, vB).x;
++        float C = texture2D(uCurl, vUv).x;
++
++        vec2 force = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L));
++        force /= length(force) + 0.0001;
++        force *= curl * C;
++        force.y *= -1.0;
++
++        vec2 velocity = texture2D(uVelocity, vUv).xy;
++        velocity += force * dt;
++        velocity = min(max(velocity, -1000.0), 1000.0);
++        gl_FragColor = vec4(velocity, 0.0, 1.0);
++    }
++`);
++
++const pressureShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying highp vec2 vUv;
++    varying highp vec2 vL;
++    varying highp vec2 vR;
++    varying highp vec2 vT;
++    varying highp vec2 vB;
++    uniform sampler2D uPressure;
++    uniform sampler2D uDivergence;
++
++    void main () {
++        float L = texture2D(uPressure, vL).x;
++        float R = texture2D(uPressure, vR).x;
++        float T = texture2D(uPressure, vT).x;
++        float B = texture2D(uPressure, vB).x;
++        float C = texture2D(uPressure, vUv).x;
++        float divergence = texture2D(uDivergence, vUv).x;
++        float pressure = (L + R + B + T - divergence) * 0.25;
++        gl_FragColor = vec4(pressure, 0.0, 0.0, 1.0);
++    }
++`);
++
++const gradientSubtractShader = compileShader(gl.FRAGMENT_SHADER, `
++    precision mediump float;
++    precision mediump sampler2D;
++
++    varying highp vec2 vUv;
++    varying highp vec2 vL;
++    varying highp vec2 vR;
++    varying highp vec2 vT;
++    varying highp vec2 vB;
++    uniform sampler2D uPressure;
++    uniform sampler2D uVelocity;
++
++    void main () {
++        float L = texture2D(uPressure, vL).x;
++        float R = texture2D(uPressure, vR).x;
++        float T = texture2D(uPressure, vT).x;
++        float B = texture2D(uPressure, vB).x;
++        vec2 velocity = texture2D(uVelocity, vUv).xy;
++        velocity.xy -= vec2(R - L, T - B);
++        gl_FragColor = vec4(velocity, 0.0, 1.0);
++    }
++`);
++
++const blit = (() => {
++    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
++    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, -1, 1, 1, 1, 1, -1]), gl.STATIC_DRAW);
++    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
++    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2, 0, 2, 3]), gl.STATIC_DRAW);
++    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
++    gl.enableVertexAttribArray(0);
++
++    return (target, clear = false) => {
++        if (target == null)
++        {
++            gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
++            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
++        }
++        else
++        {
++            gl.viewport(0, 0, target.width, target.height);
++            gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
++        }
++        if (clear)
++        {
++            gl.clearColor(0.0, 0.0, 0.0, 1.0);
++            gl.clear(gl.COLOR_BUFFER_BIT);
++        }
++        // CHECK_FRAMEBUFFER_STATUS();
++        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
++    }
++})();
++
++function CHECK_FRAMEBUFFER_STATUS () {
++    let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
++    if (status != gl.FRAMEBUFFER_COMPLETE)
++        console.trace("Framebuffer error: " + status);
++}
++
++let dye;
++let velocity;
++let divergence;
++let curl;
++let pressure;
++let bloom;
++let bloomFramebuffers = [];
++let sunrays;
++let sunraysTemp;
++
++let ditheringTexture = createTextureAsync('LDR_LLL1_0.png');
++
++const blurProgram            = new Program(blurVertexShader, blurShader);
++const copyProgram            = new Program(baseVertexShader, copyShader);
++const clearProgram           = new Program(baseVertexShader, clearShader);
++const colorProgram           = new Program(baseVertexShader, colorShader);
++const checkerboardProgram    = new Program(baseVertexShader, checkerboardShader);
++const bloomPrefilterProgram  = new Program(baseVertexShader, bloomPrefilterShader);
++const bloomBlurProgram       = new Program(baseVertexShader, bloomBlurShader);
++const bloomFinalProgram      = new Program(baseVertexShader, bloomFinalShader);
++const sunraysMaskProgram     = new Program(baseVertexShader, sunraysMaskShader);
++const sunraysProgram         = new Program(baseVertexShader, sunraysShader);
++const splatProgram           = new Program(baseVertexShader, splatShader);
++const advectionProgram       = new Program(baseVertexShader, advectionShader);
++const divergenceProgram      = new Program(baseVertexShader, divergenceShader);
++const curlProgram            = new Program(baseVertexShader, curlShader);
++const vorticityProgram       = new Program(baseVertexShader, vorticityShader);
++const pressureProgram        = new Program(baseVertexShader, pressureShader);
++const gradienSubtractProgram = new Program(baseVertexShader, gradientSubtractShader);
++
++const displayMaterial = new Material(baseVertexShader, displayShaderSource);
++
++function initFramebuffers () {
++    let simRes = getResolution(config.SIM_RESOLUTION);
++    let dyeRes = getResolution(config.DYE_RESOLUTION);
++
++    const texType = ext.halfFloatTexType;
++    const rgba    = ext.formatRGBA;
++    const rg      = ext.formatRG;
++    const r       = ext.formatR;
++    const filtering = ext.supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
++
++    gl.disable(gl.BLEND);
++
++    if (dye == null)
++        dye = createDoubleFBO(dyeRes.width, dyeRes.height, rgba.internalFormat, rgba.format, texType, filtering);
++    else
++        dye = resizeDoubleFBO(dye, dyeRes.width, dyeRes.height, rgba.internalFormat, rgba.format, texType, filtering);
++
++    if (velocity == null)
++        velocity = createDoubleFBO(simRes.width, simRes.height, rg.internalFormat, rg.format, texType, filtering);
++    else
++        velocity = resizeDoubleFBO(velocity, simRes.width, simRes.height, rg.internalFormat, rg.format, texType, filtering);
++
++    disposeFBO(divergence);
++    disposeFBO(curl);
++    disposeDoubleFBO(pressure);
++    divergence = createFBO      (simRes.width, simRes.height, r.internalFormat, r.format, texType, gl.NEAREST);
++    curl       = createFBO      (simRes.width, simRes.height, r.internalFormat, r.format, texType, gl.NEAREST);
++    pressure   = createDoubleFBO(simRes.width, simRes.height, r.internalFormat, r.format, texType, gl.NEAREST);
++
++    initBloomFramebuffers();
++    initSunraysFramebuffers();
++}
++
++function initBloomFramebuffers () {
++    let res = getResolution(config.BLOOM_RESOLUTION);
++
++    const texType = ext.halfFloatTexType;
++    const rgba = ext.formatRGBA;
++    const filtering = ext.supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
++
++    disposeFBO(bloom);
++    bloomFramebuffers.forEach(disposeFBO);
++    bloom = createFBO(res.width, res.height, rgba.internalFormat, rgba.format, texType, filtering);
++
++    bloomFramebuffers.length = 0;
++    for (let i = 0; i < config.BLOOM_ITERATIONS; i++)
++    {
++        let width = res.width >> (i + 1);
++        let height = res.height >> (i + 1);
++
++        if (width < 2 || height < 2) break;
++
++        let fbo = createFBO(width, height, rgba.internalFormat, rgba.format, texType, filtering);
++        bloomFramebuffers.push(fbo);
++    }
++}
++
++function initSunraysFramebuffers () {
++    let res = getResolution(config.SUNRAYS_RESOLUTION);
++
++    const texType = ext.halfFloatTexType;
++    const r = ext.formatR;
++    const filtering = ext.supportLinearFiltering ? gl.LINEAR : gl.NEAREST;
++
++    disposeFBO(sunrays);
++    disposeFBO(sunraysTemp);
++    sunrays     = createFBO(res.width, res.height, r.internalFormat, r.format, texType, filtering);
++    sunraysTemp = createFBO(res.width, res.height, r.internalFormat, r.format, texType, filtering);
++}
++
++function disposeFBO (target) {
++    if (target == null) return;
++    gl.deleteTexture(target.texture);
++    gl.deleteFramebuffer(target.fbo);
++}
++
++function disposeDoubleFBO (target) {
++    if (target == null) return;
++    disposeFBO(target.read);
++    disposeFBO(target.write);
++}
++
++function createFBO (w, h, internalFormat, format, type, param) {
++    gl.activeTexture(gl.TEXTURE0);
++    let texture = gl.createTexture();
++    gl.bindTexture(gl.TEXTURE_2D, texture);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, param);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, param);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
++    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, w, h, 0, format, type, null);
++
++    let fbo = gl.createFramebuffer();
++    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
++    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
++    gl.viewport(0, 0, w, h);
++    gl.clear(gl.COLOR_BUFFER_BIT);
++
++    let texelSizeX = 1.0 / w;
++    let texelSizeY = 1.0 / h;
++
++    return {
++        texture,
++        fbo,
++        width: w,
++        height: h,
++        texelSizeX,
++        texelSizeY,
++        attach (id) {
++            gl.activeTexture(gl.TEXTURE0 + id);
++            gl.bindTexture(gl.TEXTURE_2D, texture);
++            return id;
++        }
++    };
++}
++
++function createDoubleFBO (w, h, internalFormat, format, type, param) {
++    let fbo1 = createFBO(w, h, internalFormat, format, type, param);
++    let fbo2 = createFBO(w, h, internalFormat, format, type, param);
++
++    return {
++        width: w,
++        height: h,
++        texelSizeX: fbo1.texelSizeX,
++        texelSizeY: fbo1.texelSizeY,
++        get read () {
++            return fbo1;
++        },
++        set read (value) {
++            fbo1 = value;
++        },
++        get write () {
++            return fbo2;
++        },
++        set write (value) {
++            fbo2 = value;
++        },
++        swap () {
++            let temp = fbo1;
++            fbo1 = fbo2;
++            fbo2 = temp;
++        }
++    }
++}
++
++function resizeFBO (target, w, h, internalFormat, format, type, param) {
++    let newFBO = createFBO(w, h, internalFormat, format, type, param);
++    copyProgram.bind();
++    gl.uniform1i(copyProgram.uniforms.uTexture, target.attach(0));
++    blit(newFBO);
++    disposeFBO(target);
++    return newFBO;
++}
++
++function resizeDoubleFBO (target, w, h, internalFormat, format, type, param) {
++    if (target.width == w && target.height == h)
++        return target;
++    target.read = resizeFBO(target.read, w, h, internalFormat, format, type, param);
++    disposeFBO(target.write);
++    target.write = createFBO(w, h, internalFormat, format, type, param);
++    target.width = w;
++    target.height = h;
++    target.texelSizeX = 1.0 / w;
++    target.texelSizeY = 1.0 / h;
++    return target;
++}
++
++function createTextureAsync (url) {
++    let texture = gl.createTexture();
++    gl.bindTexture(gl.TEXTURE_2D, texture);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
++    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
++    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255]));
++
++    let obj = {
++        texture,
++        width: 1,
++        height: 1,
++        attach (id) {
++            gl.activeTexture(gl.TEXTURE0 + id);
++            gl.bindTexture(gl.TEXTURE_2D, texture);
++            return id;
++        }
++    };
++
++    let image = new Image();
++    image.onload = () => {
++        obj.width = image.width;
++        obj.height = image.height;
++        gl.bindTexture(gl.TEXTURE_2D, texture);
++        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
++    };
++    image.src = url;
++
++    return obj;
++}
++
++function updateKeywords () {
++    let displayKeywords = [];
++    if (config.SHADING) displayKeywords.push("SHADING");
++    if (config.BLOOM) displayKeywords.push("BLOOM");
++    if (config.SUNRAYS) displayKeywords.push("SUNRAYS");
++    displayMaterial.setKeywords(displayKeywords);
++}
++
++updateKeywords();
++initFramebuffers();
++multipleSplats(parseInt(Math.random() * 7) + 6);
++
++let lastUpdateTime = Date.now();
++let colorUpdateTimer = 0.0;
++let ambientFlowTimer = 0.0;
++let ambientFlowIndex = 0;
++let animationFrame = 0;
++let running = true;
++update();
++
++function update () {
++    if (!running || document.hidden || !surfaceEnabled) {
++        animationFrame = 0;
++        return;
++    }
++    const dt = calcDeltaTime();
++    if (resizeCanvas())
++        initFramebuffers();
++    updateColors(dt);
++    applyInputs();
++    updateAmbientFlow(dt);
++    if (!config.PAUSED)
++        step(dt);
++    render(null);
++    animationFrame = requestAnimationFrame(update);
++}
++
++function calcDeltaTime () {
++    let now = Date.now();
++    let dt = (now - lastUpdateTime) / 1000;
++    dt = Math.min(dt, 0.016666);
++    lastUpdateTime = now;
++    return dt;
++}
++
++function resizeCanvas () {
++    let width = scaleByPixelRatio(canvas.clientWidth);
++    let height = scaleByPixelRatio(canvas.clientHeight);
++    if (canvas.width != width || canvas.height != height) {
++        canvas.width = width;
++        canvas.height = height;
++        return true;
++    }
++    return false;
++}
++
++function updateColors (dt) {
++    if (!config.COLORFUL) return;
++
++    colorUpdateTimer += dt * config.COLOR_UPDATE_SPEED;
++    if (colorUpdateTimer >= 1) {
++        colorUpdateTimer = wrap(colorUpdateTimer, 0, 1);
++        pointers.forEach(p => {
++            p.color = generateColor();
++        });
++    }
++}
++
++function applyInputs () {
++    if (splatStack.length > 0)
++        multipleSplats(splatStack.pop());
++
++    pointers.forEach(p => {
++        if (p.moved) {
++            p.moved = false;
++            splatPointer(p);
++        }
++    });
++}
++
++function updateAmbientFlow (dt) {
++    if (!config.AMBIENT_FLOW || config.PAUSED) return;
++    const speed = reducedMotion ? runtimeConfig.flowSpeed * 0.45 : runtimeConfig.flowSpeed;
++    ambientFlowTimer += dt * (0.25 + speed * 1.75);
++    if (ambientFlowTimer < config.AMBIENT_FLOW_INTERVAL) return;
++    ambientFlowTimer %= config.AMBIENT_FLOW_INTERVAL;
++    const fromLeft = ambientFlowIndex % 2 === 0;
++    const phase = ambientFlowIndex * 0.61;
++    const x = fromLeft ? 0.04 : 0.96;
++    const y = 0.5 + Math.sin(phase) * 0.3;
++    const direction = fromLeft ? 1.0 : -1.0;
++    const strength = config.AMBIENT_FLOW_STRENGTH * (0.42 + speed * 0.92);
++    const color = generateColor();
++    color.r *= config.AMBIENT_DYE_INTENSITY;
++    color.g *= config.AMBIENT_DYE_INTENSITY;
++    color.b *= config.AMBIENT_DYE_INTENSITY;
++    splat(x, y, direction * strength, Math.cos(phase) * strength * 0.12, color);
++    ambientFlowIndex++;
++}
++
++function step (dt) {
++    gl.disable(gl.BLEND);
++
++    curlProgram.bind();
++    gl.uniform2f(curlProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
++    gl.uniform1i(curlProgram.uniforms.uVelocity, velocity.read.attach(0));
++    blit(curl);
++
++    vorticityProgram.bind();
++    gl.uniform2f(vorticityProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
++    gl.uniform1i(vorticityProgram.uniforms.uVelocity, velocity.read.attach(0));
++    gl.uniform1i(vorticityProgram.uniforms.uCurl, curl.attach(1));
++    gl.uniform1f(vorticityProgram.uniforms.curl, config.CURL);
++    gl.uniform1f(vorticityProgram.uniforms.dt, dt);
++    blit(velocity.write);
++    velocity.swap();
++
++    divergenceProgram.bind();
++    gl.uniform2f(divergenceProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
++    gl.uniform1i(divergenceProgram.uniforms.uVelocity, velocity.read.attach(0));
++    blit(divergence);
++
++    clearProgram.bind();
++    gl.uniform1i(clearProgram.uniforms.uTexture, pressure.read.attach(0));
++    gl.uniform1f(clearProgram.uniforms.value, config.PRESSURE);
++    blit(pressure.write);
++    pressure.swap();
++
++    pressureProgram.bind();
++    gl.uniform2f(pressureProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
++    gl.uniform1i(pressureProgram.uniforms.uDivergence, divergence.attach(0));
++    for (let i = 0; i < config.PRESSURE_ITERATIONS; i++) {
++        gl.uniform1i(pressureProgram.uniforms.uPressure, pressure.read.attach(1));
++        blit(pressure.write);
++        pressure.swap();
++    }
++
++    gradienSubtractProgram.bind();
++    gl.uniform2f(gradienSubtractProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
++    gl.uniform1i(gradienSubtractProgram.uniforms.uPressure, pressure.read.attach(0));
++    gl.uniform1i(gradienSubtractProgram.uniforms.uVelocity, velocity.read.attach(1));
++    blit(velocity.write);
++    velocity.swap();
++
++    advectionProgram.bind();
++    gl.uniform2f(advectionProgram.uniforms.texelSize, velocity.texelSizeX, velocity.texelSizeY);
++    if (!ext.supportLinearFiltering)
++        gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, velocity.texelSizeX, velocity.texelSizeY);
++    let velocityId = velocity.read.attach(0);
++    gl.uniform1i(advectionProgram.uniforms.uVelocity, velocityId);
++    gl.uniform1i(advectionProgram.uniforms.uSource, velocityId);
++    gl.uniform1f(advectionProgram.uniforms.dt, dt);
++    gl.uniform1f(advectionProgram.uniforms.dissipation, config.VELOCITY_DISSIPATION);
++    blit(velocity.write);
++    velocity.swap();
++
++    if (!ext.supportLinearFiltering)
++        gl.uniform2f(advectionProgram.uniforms.dyeTexelSize, dye.texelSizeX, dye.texelSizeY);
++    gl.uniform1i(advectionProgram.uniforms.uVelocity, velocity.read.attach(0));
++    gl.uniform1i(advectionProgram.uniforms.uSource, dye.read.attach(1));
++    gl.uniform1f(advectionProgram.uniforms.dissipation, config.DENSITY_DISSIPATION);
++    blit(dye.write);
++    dye.swap();
++}
++
++function render (target) {
++    if (config.BLOOM)
++        applyBloom(dye.read, bloom);
++    if (config.SUNRAYS) {
++        applySunrays(dye.read, dye.write, sunrays);
++        blur(sunrays, sunraysTemp, 1);
++    }
++
++    if (target == null || !config.TRANSPARENT) {
++        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
++        gl.enable(gl.BLEND);
++    }
++    else {
++        gl.disable(gl.BLEND);
++    }
++
++    if (!config.TRANSPARENT)
++        drawColor(target, normalizeColor(config.BACK_COLOR));
++    if (target == null && config.TRANSPARENT)
++        drawCheckerboard(target);
++    drawDisplay(target);
++}
++
++function drawColor (target, color) {
++    colorProgram.bind();
++    gl.uniform4f(colorProgram.uniforms.color, color.r, color.g, color.b, 1);
++    // 网格密度：单元格约 96 物理像素，随画布尺寸自适应
++    let cellPx = 96.0;
++    gl.uniform2f(colorProgram.uniforms.gridScale,
++        Math.max(1.0, canvas.width / cellPx),
++        Math.max(1.0, canvas.height / cellPx));
++    blit(target);
++}
++
++function drawCheckerboard (target) {
++    checkerboardProgram.bind();
++    gl.uniform1f(checkerboardProgram.uniforms.aspectRatio, canvas.width / canvas.height);
++    blit(target);
++}
++
++function drawDisplay (target) {
++    let width = target == null ? gl.drawingBufferWidth : target.width;
++    let height = target == null ? gl.drawingBufferHeight : target.height;
++
++    displayMaterial.bind();
++    if (config.SHADING)
++        gl.uniform2f(displayMaterial.uniforms.texelSize, 1.0 / width, 1.0 / height);
++    gl.uniform1i(displayMaterial.uniforms.uTexture, dye.read.attach(0));
++    if (config.BLOOM) {
++        gl.uniform1i(displayMaterial.uniforms.uBloom, bloom.attach(1));
++        gl.uniform1i(displayMaterial.uniforms.uDithering, ditheringTexture.attach(2));
++        let scale = getTextureScale(ditheringTexture, width, height);
++        gl.uniform2f(displayMaterial.uniforms.ditherScale, scale.x, scale.y);
++    }
++    if (config.SUNRAYS)
++        gl.uniform1i(displayMaterial.uniforms.uSunrays, sunrays.attach(3));
++    blit(target);
++}
++
++function applyBloom (source, destination) {
++    if (bloomFramebuffers.length < 2)
++        return;
++
++    let last = destination;
++
++    gl.disable(gl.BLEND);
++    bloomPrefilterProgram.bind();
++    let knee = config.BLOOM_THRESHOLD * config.BLOOM_SOFT_KNEE + 0.0001;
++    let curve0 = config.BLOOM_THRESHOLD - knee;
++    let curve1 = knee * 2;
++    let curve2 = 0.25 / knee;
++    gl.uniform3f(bloomPrefilterProgram.uniforms.curve, curve0, curve1, curve2);
++    gl.uniform1f(bloomPrefilterProgram.uniforms.threshold, config.BLOOM_THRESHOLD);
++    gl.uniform1i(bloomPrefilterProgram.uniforms.uTexture, source.attach(0));
++    blit(last);
++
++    bloomBlurProgram.bind();
++    for (let i = 0; i < bloomFramebuffers.length; i++) {
++        let dest = bloomFramebuffers[i];
++        gl.uniform2f(bloomBlurProgram.uniforms.texelSize, last.texelSizeX, last.texelSizeY);
++        gl.uniform1i(bloomBlurProgram.uniforms.uTexture, last.attach(0));
++        blit(dest);
++        last = dest;
++    }
++
++    gl.blendFunc(gl.ONE, gl.ONE);
++    gl.enable(gl.BLEND);
++
++    for (let i = bloomFramebuffers.length - 2; i >= 0; i--) {
++        let baseTex = bloomFramebuffers[i];
++        gl.uniform2f(bloomBlurProgram.uniforms.texelSize, last.texelSizeX, last.texelSizeY);
++        gl.uniform1i(bloomBlurProgram.uniforms.uTexture, last.attach(0));
++        gl.viewport(0, 0, baseTex.width, baseTex.height);
++        blit(baseTex);
++        last = baseTex;
++    }
++
++    gl.disable(gl.BLEND);
++    bloomFinalProgram.bind();
++    gl.uniform2f(bloomFinalProgram.uniforms.texelSize, last.texelSizeX, last.texelSizeY);
++    gl.uniform1i(bloomFinalProgram.uniforms.uTexture, last.attach(0));
++    gl.uniform1f(bloomFinalProgram.uniforms.intensity, config.BLOOM_INTENSITY);
++    blit(destination);
++}
++
++function applySunrays (source, mask, destination) {
++    gl.disable(gl.BLEND);
++    sunraysMaskProgram.bind();
++    gl.uniform1i(sunraysMaskProgram.uniforms.uTexture, source.attach(0));
++    blit(mask);
++
++    sunraysProgram.bind();
++    gl.uniform1f(sunraysProgram.uniforms.weight, config.SUNRAYS_WEIGHT);
++    gl.uniform1i(sunraysProgram.uniforms.uTexture, mask.attach(0));
++    blit(destination);
++}
++
++function blur (target, temp, iterations) {
++    blurProgram.bind();
++    for (let i = 0; i < iterations; i++) {
++        gl.uniform2f(blurProgram.uniforms.texelSize, target.texelSizeX, 0.0);
++        gl.uniform1i(blurProgram.uniforms.uTexture, target.attach(0));
++        blit(temp);
++
++        gl.uniform2f(blurProgram.uniforms.texelSize, 0.0, target.texelSizeY);
++        gl.uniform1i(blurProgram.uniforms.uTexture, temp.attach(0));
++        blit(target);
++    }
++}
++
++function splatPointer (pointer) {
++    if (!isValidColor(pointer.color))
++        pointer.color = generateColor();
++    const pointerScale = reducedMotion ? runtimeConfig.pointerForce * 0.42 : runtimeConfig.pointerForce;
++    let dx = pointer.deltaX * config.SPLAT_FORCE * pointerScale;
++    let dy = pointer.deltaY * config.SPLAT_FORCE * pointerScale;
++    splat(pointer.texcoordX, pointer.texcoordY, dx, dy, pointer.color);
++}
++
++function isValidColor (color) {
++    return color != null
++        && Number.isFinite(color.r)
++        && Number.isFinite(color.g)
++        && Number.isFinite(color.b);
++}
++
++function multipleSplats (amount) {
++    for (let i = 0; i < amount; i++) {
++        const color = generateColor();
++        color.r *= 1.2;
++        color.g *= 1.2;
++        color.b *= 1.2;
++        const x = Math.random();
++        const y = Math.random();
++        const dx = 1000 * (Math.random() - 0.5);
++        const dy = 1000 * (Math.random() - 0.5);
++        splat(x, y, dx, dy, color);
++    }
++}
++
++function splat (x, y, dx, dy, color) {
++    splatProgram.bind();
++    gl.uniform1i(splatProgram.uniforms.uTarget, velocity.read.attach(0));
++    gl.uniform1f(splatProgram.uniforms.aspectRatio, canvas.width / canvas.height);
++    gl.uniform2f(splatProgram.uniforms.point, x, y);
++    gl.uniform3f(splatProgram.uniforms.color, dx, dy, 0.0);
++    gl.uniform1f(splatProgram.uniforms.radius, correctRadius(config.SPLAT_RADIUS / 100.0));
++    blit(velocity.write);
++    velocity.swap();
++
++    gl.uniform1i(splatProgram.uniforms.uTarget, dye.read.attach(0));
++    gl.uniform3f(splatProgram.uniforms.color, color.r, color.g, color.b);
++    blit(dye.write);
++    dye.swap();
++}
++
++function correctRadius (radius) {
++    let aspectRatio = canvas.width / canvas.height;
++    if (aspectRatio > 1)
++        radius *= aspectRatio;
++    return radius;
++}
++
++canvas.addEventListener('mousedown', e => {
++    let posX = scaleByPixelRatio(e.offsetX);
++    let posY = scaleByPixelRatio(e.offsetY);
++    let pointer = pointers.find(p => p.id == -1);
++    if (pointer == null)
++        pointer = new pointerPrototype();
++    updatePointerDownData(pointer, -1, posX, posY);
++});
++
++// 背景层模式：canvas 不拦截指针事件（pointer-events:none），
++// 鼠标位置从 window 级事件获取（clientX/Y 相对视口，canvas 全屏固定时等价）
++function onPointerMove (e) {
++    let pointer = pointers[0];
++    let posX = scaleByPixelRatio(e.clientX);
++    let posY = scaleByPixelRatio(e.clientY);
++    // 壁纸场景：光标悬停移动即扰动，无需按住
++    // 首次进入时先初始化 prev 坐标，避免突兀的首次大位移
++    if (!pointer.hoverInitialized) {
++        pointer.texcoordX = posX / canvas.width;
++        pointer.texcoordY = 1.0 - posY / canvas.height;
++        pointer.prevTexcoordX = pointer.texcoordX;
++        pointer.prevTexcoordY = pointer.texcoordY;
++        pointer.deltaX = 0;
++        pointer.deltaY = 0;
++        pointer.color = generateColor();
++        pointer.hoverInitialized = true;
++        return;
++    }
++    updatePointerMoveData(pointer, posX, posY);
++}
++
++window.addEventListener('pointermove', onPointerMove, { passive: true });
++
++function onPointerUp () {
++    updatePointerUpData(pointers[0]);
++}
++
++window.addEventListener('pointerup', onPointerUp, { passive: true });
++
++canvas.addEventListener('touchstart', e => {
++    e.preventDefault();
++    const touches = e.targetTouches;
++    while (touches.length >= pointers.length)
++        pointers.push(new pointerPrototype());
++    for (let i = 0; i < touches.length; i++) {
++        let posX = scaleByPixelRatio(touches[i].pageX);
++        let posY = scaleByPixelRatio(touches[i].pageY);
++        updatePointerDownData(pointers[i + 1], touches[i].identifier, posX, posY);
++    }
++});
++
++canvas.addEventListener('touchmove', e => {
++    e.preventDefault();
++    const touches = e.targetTouches;
++    for (let i = 0; i < touches.length; i++) {
++        let pointer = pointers[i + 1];
++        if (!pointer.down) continue;
++        let posX = scaleByPixelRatio(touches[i].pageX);
++        let posY = scaleByPixelRatio(touches[i].pageY);
++        updatePointerMoveData(pointer, posX, posY);
++    }
++}, false);
++
++function onTouchEnd (e) {
++    const touches = e.changedTouches;
++    for (let i = 0; i < touches.length; i++)
++    {
++        let pointer = pointers.find(p => p.id == touches[i].identifier);
++        if (pointer == null) continue;
++        updatePointerUpData(pointer);
++    }
++}
++
++window.addEventListener('touchend', onTouchEnd, { passive: true });
++
++function updatePointerDownData (pointer, id, posX, posY) {
++    pointer.id = id;
++    pointer.down = true;
++    pointer.moved = false;
++    pointer.texcoordX = posX / canvas.width;
++    pointer.texcoordY = 1.0 - posY / canvas.height;
++    pointer.prevTexcoordX = pointer.texcoordX;
++    pointer.prevTexcoordY = pointer.texcoordY;
++    pointer.deltaX = 0;
++    pointer.deltaY = 0;
++    pointer.color = generateColor();
++}
++
++function updatePointerMoveData (pointer, posX, posY) {
++    pointer.prevTexcoordX = pointer.texcoordX;
++    pointer.prevTexcoordY = pointer.texcoordY;
++    pointer.texcoordX = posX / canvas.width;
++    pointer.texcoordY = 1.0 - posY / canvas.height;
++    pointer.deltaX = correctDeltaX(pointer.texcoordX - pointer.prevTexcoordX);
++    pointer.deltaY = correctDeltaY(pointer.texcoordY - pointer.prevTexcoordY);
++    pointer.moved = Math.abs(pointer.deltaX) > 0 || Math.abs(pointer.deltaY) > 0;
++}
++
++function updatePointerUpData (pointer) {
++    pointer.down = false;
++}
++
++function correctDeltaX (delta) {
++    let aspectRatio = canvas.width / canvas.height;
++    if (aspectRatio < 1) delta *= aspectRatio;
++    return delta;
++}
++
++function correctDeltaY (delta) {
++    let aspectRatio = canvas.width / canvas.height;
++    if (aspectRatio > 1) delta /= aspectRatio;
++    return delta;
++}
++
++function generateColor () {
++    const palette = PALETTES[runtimeConfig.palette] || PALETTES.ocean;
++    let h = palette.hMin + Math.random() * palette.hRange;
++    let s = palette.sMin + Math.random() * palette.sRange;
++    let v = palette.vMin + Math.random() * palette.vRange;
++    let c = HSVtoRGB(h, s, v);
++    c.r *= palette.rgb[0];
++    c.g *= palette.rgb[1];
++    c.b *= palette.rgb[2];
++    return c;
++}
++
++function HSVtoRGB (h, s, v) {
++    let r, g, b, i, f, p, q, t;
++    i = Math.floor(h * 6);
++    f = h * 6 - i;
++    p = v * (1 - s);
++    q = v * (1 - f * s);
++    t = v * (1 - (1 - f) * s);
++
++    switch (i % 6) {
++        case 0: r = v, g = t, b = p; break;
++        case 1: r = q, g = v, b = p; break;
++        case 2: r = p, g = v, b = t; break;
++        case 3: r = p, g = q, b = v; break;
++        case 4: r = t, g = p, b = v; break;
++        case 5: r = v, g = p, b = q; break;
++    }
++
++    return {
++        r,
++        g,
++        b
++    };
++}
++
++function normalizeColor (input) {
++    let output = {
++        r: input.r / 255,
++        g: input.g / 255,
++        b: input.b / 255
++    };
++    return output;
++}
++
++function wrap (value, min, max) {
++    let range = max - min;
++    if (range == 0) return min;
++    return (value - min) % range + min;
++}
++
++function getResolution (resolution) {
++    let aspectRatio = gl.drawingBufferWidth / gl.drawingBufferHeight;
++    if (aspectRatio < 1)
++        aspectRatio = 1.0 / aspectRatio;
++
++    let min = Math.round(resolution);
++    let max = Math.round(resolution * aspectRatio);
++
++    if (gl.drawingBufferWidth > gl.drawingBufferHeight)
++        return { width: max, height: min };
++    else
++        return { width: min, height: max };
++}
++
++function getTextureScale (texture, width, height) {
++    return {
++        x: width / texture.width,
++        y: height / texture.height
++    };
++}
++
++function scaleByPixelRatio (input) {
++    let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
++    return Math.floor(input * pixelRatio);
++}
++
++function hashCode (s) {
++    if (s.length == 0) return 0;
++    let hash = 0;
++    for (let i = 0; i < s.length; i++) {
++        hash = (hash << 5) - hash + s.charCodeAt(i);
++        hash |= 0; // Convert to 32bit integer
++    }
++    return hash;
++};
++
++function onVisibilityChange () {
++    lastUpdateTime = Date.now();
++    if (!document.hidden && running && surfaceEnabled && animationFrame === 0)
++        update();
++}
++
++document.addEventListener('visibilitychange', onVisibilityChange);
++
++function clampRuntime01 (value, fallback) {
++    return Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : fallback;
++}
++
++function applyQuality (quality) {
++    const key = Object.prototype.hasOwnProperty.call(QUALITY_PRESETS, quality) ? quality : 'balanced';
++    const preset = QUALITY_PRESETS[key];
++    runtimeConfig.quality = key;
++    config.SIM_RESOLUTION = reducedMotion ? Math.min(96, preset.sim) : preset.sim;
++    config.DYE_RESOLUTION = ext.supportLinearFiltering ? preset.dye : 512;
++    config.PRESSURE_ITERATIONS = reducedMotion ? Math.min(10, preset.pressure) : preset.pressure;
++    config.BLOOM_ITERATIONS = reducedMotion ? Math.min(3, preset.bloomIterations) : preset.bloomIterations;
++    initFramebuffers();
++}
++
++const fluidRuntime = {
++    getConfig () {
++        return { ...runtimeConfig, enabled: surfaceEnabled };
++    },
++    updateConfig (next) {
++        if (next == null || typeof next !== 'object') return;
++        runtimeConfig.flowSpeed = clampRuntime01(next.flowSpeed, runtimeConfig.flowSpeed);
++        runtimeConfig.pointerForce = clampRuntime01(next.pointerForce, runtimeConfig.pointerForce);
++        runtimeConfig.bloom = clampRuntime01(next.bloom, runtimeConfig.bloom);
++        config.BLOOM_INTENSITY = 0.02 + runtimeConfig.bloom * 0.18;
++        config.BLOOM = ext.supportLinearFiltering && runtimeConfig.bloom > 0.01;
++        updateKeywords();
++        if (typeof next.palette === 'string' && Object.prototype.hasOwnProperty.call(PALETTES, next.palette)) {
++            runtimeConfig.palette = next.palette;
++        }
++        if (typeof next.quality === 'string' && next.quality !== runtimeConfig.quality) {
++            applyQuality(next.quality);
++        }
++        if (typeof next.enabled === 'boolean') this.setEnabled(next.enabled);
++    },
++    setEnabled (enabled) {
++        surfaceEnabled = enabled;
++        lastUpdateTime = Date.now();
++        if (surfaceEnabled && running && !document.hidden && animationFrame === 0) update();
++    },
++};
++
++window.__DSH_LIQUID_FLUID__ = fluidRuntime;
++window.dispatchEvent(new CustomEvent('dsh-liquid-fluid-ready'));
++
++window.__DSH_LIQUID_FLUID_CLEANUP__ = () => {
++    if (!running) return;
++    running = false;
++    if (animationFrame !== 0)
++        cancelAnimationFrame(animationFrame);
++    animationFrame = 0;
++    window.removeEventListener('pointermove', onPointerMove);
++    window.removeEventListener('pointerup', onPointerUp);
++    window.removeEventListener('touchend', onTouchEnd);
++    document.removeEventListener('visibilitychange', onVisibilityChange);
++    if (window.__DSH_LIQUID_FLUID__ === fluidRuntime)
++        delete window.__DSH_LIQUID_FLUID__;
++    const loseContext = gl.getExtension('WEBGL_lose_context');
++    if (loseContext)
++        loseContext.loseContext();
++};
++
++    } catch (error) {
++        // 壁纸降级：WebGL 不可用或初始化失败时静默停用，绝不影响宿主 GUI
++        console.warn('[fluid-wallpaper] disabled:', error && error.message ? error.message : error)
++    }
++})();
+diff --git a/docs/config-catalog.i18n.yaml b/docs/config-catalog.i18n.yaml
+index f5a845ad5f7377170702887d41726f44bab4346b..7da716ac5ec155cb171319940a7ddd98eda4663a 100644
+--- a/docs/config-catalog.i18n.yaml
++++ b/docs/config-catalog.i18n.yaml
+@@ -2,5 +2,5 @@
+ # side as of the last confirmed-consistent state. Both languages carry equal authority;
+ # after editing either side, bring the other along and re-record with:
+ #   pnpm run verify-translation-pairing --write docs/config-catalog.md
+-config-catalog.md: 20919b3fdc5ab26255465949d72bdce8d356a529
+-config-catalog.zh.md: 8dfb49df5e3f5906af859a4de83ebc44f315a0bd
++config-catalog.md: ee9bc4f2b5bea58849c712e7e5a248af73ecde34
++config-catalog.zh.md: 01d6caf7a2bf5468d6c30eb749c1df270fb9075b
+diff --git a/docs/config-catalog.md b/docs/config-catalog.md
+index 20919b3fdc5ab26255465949d72bdce8d356a529..ee9bc4f2b5bea58849c712e7e5a248af73ecde34 100644
+--- a/docs/config-catalog.md
++++ b/docs/config-catalog.md
+@@ -3042,6 +3042,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
+ - `@deepseek-ai/dsh-client-ui-input-trigger` ([`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts))
+ - `@deepseek-ai/dsh-client-ui-jobs` ([`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts))
+ - `@deepseek-ai/dsh-client-ui-layout` ([`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts))
++- `@deepseek-ai/dsh-client-ui-liquid-glass` ([`packages/client/ui-liquid-glass/src/index.ts`](../packages/client/ui-liquid-glass/src/index.ts))
+ - `@deepseek-ai/dsh-client-ui-message-feedback` ([`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts))
+ - `@deepseek-ai/dsh-client-ui-model-selection` ([`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts))
+ - `@deepseek-ai/dsh-client-ui-permission-presets` ([`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts))
+diff --git a/docs/config-catalog.zh.md b/docs/config-catalog.zh.md
+index 8dfb49df5e3f5906af859a4de83ebc44f315a0bd..01d6caf7a2bf5468d6c30eb749c1df270fb9075b 100644
+--- a/docs/config-catalog.zh.md
++++ b/docs/config-catalog.zh.md
+@@ -3044,6 +3044,7 @@ export interface Config {
+ - `@deepseek-ai/dsh-client-ui-input-trigger`（[`packages/client/ui-input-trigger/src/index.ts`](../packages/client/ui-input-trigger/src/index.ts)）
+ - `@deepseek-ai/dsh-client-ui-jobs`（[`packages/client/ui-jobs/src/index.ts`](../packages/client/ui-jobs/src/index.ts)）
+ - `@deepseek-ai/dsh-client-ui-layout`（[`packages/client/ui-layout/src/index.ts`](../packages/client/ui-layout/src/index.ts)）
++- `@deepseek-ai/dsh-client-ui-liquid-glass`（[`packages/client/ui-liquid-glass/src/index.ts`](../packages/client/ui-liquid-glass/src/index.ts)）
+ - `@deepseek-ai/dsh-client-ui-message-feedback`（[`packages/client/ui-message-feedback/src/index.ts`](../packages/client/ui-message-feedback/src/index.ts)）
+ - `@deepseek-ai/dsh-client-ui-model-selection`（[`packages/client/ui-model-selection/src/index.ts`](../packages/client/ui-model-selection/src/index.ts)）
+ - `@deepseek-ai/dsh-client-ui-permission-presets`（[`packages/client/ui-permission-presets/src/index.ts`](../packages/client/ui-permission-presets/src/index.ts)）
+diff --git a/packages/bundle/web-app/cordis.patch.yml b/packages/bundle/web-app/cordis.patch.yml
+index b06e63b54f465aa31c58cb17ca648412128e97ee..5b008d1e866640e1233c9dc30b20da26c19587ec 100644
+--- a/packages/bundle/web-app/cordis.patch.yml
++++ b/packages/bundle/web-app/cordis.patch.yml
+@@ -174,6 +174,9 @@
+     - id: ui-theme
+       name: '@deepseek-ai/dsh-client-ui-theme'
+ 
++    - id: ui-liquid-glass
++      name: '@deepseek-ai/dsh-client-ui-liquid-glass'
++
+     - id: locale
+       name: '@deepseek-ai/dsh-client-locale'
+ 
+diff --git a/packages/bundle/web-app/package.json b/packages/bundle/web-app/package.json
+index ca4709a2a9edcb56a1746219f628c01d3bdee5b2..869f050fe7b30020b9fb0aae4ef02560800d18ff 100644
+--- a/packages/bundle/web-app/package.json
++++ b/packages/bundle/web-app/package.json
+@@ -62,6 +62,7 @@
+     "@deepseek-ai/dsh-client-ui-message-feedback": "workspace:^",
+     "@deepseek-ai/dsh-client-ui-goal": "workspace:^",
+     "@deepseek-ai/dsh-client-ui-layout": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-liquid-glass": "workspace:^",
+     "@deepseek-ai/dsh-client-ui-model-selection": "workspace:^",
+     "@deepseek-ai/dsh-client-ui-settings-models": "workspace:^",
+     "@deepseek-ai/dsh-client-ui-settings-plugin-inventory": "workspace:^",
+diff --git a/packages/client/ui-conversation/src/client/chat/ChatView.module.css b/packages/client/ui-conversation/src/client/chat/ChatView.module.css
+index d16608c8569038e6c49114cedf182106135e784b..1676e706fce280ab67593d03d2d188f11ea743fe 100644
+--- a/packages/client/ui-conversation/src/client/chat/ChatView.module.css
++++ b/packages/client/ui-conversation/src/client/chat/ChatView.module.css
+@@ -182,7 +182,9 @@
+   border-radius: 100px;
+   color: var(--dsw-alias-label-primary);
+   background: var(--dsw-alias-button-floating-fill);
+-  box-shadow: var(--dsw-shadow-lv2);
++  backdrop-filter: var(--dsh-glass-blur);
++  -webkit-backdrop-filter: var(--dsh-glass-blur);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+   cursor: pointer;
+   pointer-events: auto;
+ }
+diff --git a/packages/client/ui-conversation/src/client/chat/MessageItem.module.css b/packages/client/ui-conversation/src/client/chat/MessageItem.module.css
+index 36824d228d68359083e51556702bcfe554b18575..7d203103541529a80693aa09743f2fb1340dce86 100644
+--- a/packages/client/ui-conversation/src/client/chat/MessageItem.module.css
++++ b/packages/client/ui-conversation/src/client/chat/MessageItem.module.css
+@@ -20,6 +20,8 @@
+   /* 525px cap inside the 736 column; percentage keeps narrow windows sane. */
+   max-width: 100%;
+   background: var(--dsw-specific-bubble);
++  border: 1px solid var(--dsh-glass-border);
++  box-shadow: var(--dsh-glass-inner-highlight);
+   border-radius: 22px;
+   /* 44px single-line bubble: 24 line + 10 vertical padding each side. */
+   padding: 10px 16px;
+diff --git a/packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css b/packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css
+index 6146d428107c8a4e743b4c0f8738db9488fce74a..2fd7e05c5e9d9bc425e516bba71048c572108c13 100644
+--- a/packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css
++++ b/packages/client/ui-conversation/src/client/skeleton/ConversationRoot.module.css
+@@ -8,7 +8,7 @@
+   flex-direction: column;
+   height: 100%;
+   min-width: 0;
+-  background: var(--dsw-alias-bg-base);
++  background: transparent;
+ 
+   /* Shared width axis for the whole column: one content width W
+      (--dsh-chat-content-width) for the transcript, the dock cards
+@@ -30,6 +30,9 @@
+   flex: none;
+   padding: 12px 28px 0 20px;
+   border-bottom: 1px solid transparent;
++  background: var(--dsh-glass-bg-soft);
++  backdrop-filter: var(--dsh-glass-blur-soft);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-soft);
+ }
+ 
+ .header::after {
+diff --git a/packages/client/ui-conversation/src/client/skeleton/DetailsPanel.module.css b/packages/client/ui-conversation/src/client/skeleton/DetailsPanel.module.css
+index cc5d732e45a6d529d0c64229d1049f43161022d1..c58d3e4f802744fb9b8d248d3f9a55a57396fc27 100644
+--- a/packages/client/ui-conversation/src/client/skeleton/DetailsPanel.module.css
++++ b/packages/client/ui-conversation/src/client/skeleton/DetailsPanel.module.css
+@@ -8,7 +8,10 @@
+   height: 100%;
+   min-width: 0;
+   border-left: 1px solid var(--dsw-alias-border-l2);
+-  background: var(--dsw-alias-bg-base);
++  background: var(--dsh-glass-bg);
++  backdrop-filter: var(--dsh-glass-blur);
++  -webkit-backdrop-filter: var(--dsh-glass-blur);
++  box-shadow: inset 1px 0 0 var(--dsh-glass-highlight);
+ }
+ 
+ /* figma RightSidebar header frame (I54:42735;43:36451): pad 14/12/12/12, gap 8. */
+diff --git a/packages/client/ui-conversation/src/client/skeleton/InputBar.module.css b/packages/client/ui-conversation/src/client/skeleton/InputBar.module.css
+index 6a2eb5fdf4399b6076ab038a751305c416791fd1..8842060e52a17de61bd57b23c36b76d780884611 100644
+--- a/packages/client/ui-conversation/src/client/skeleton/InputBar.module.css
++++ b/packages/client/ui-conversation/src/client/skeleton/InputBar.module.css
+@@ -69,7 +69,7 @@
+   border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
+   border-radius: 22px;
+   background: var(--dsw-specific-input-major);
+-  box-shadow: var(--dsw-shadow-lv2);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+   font-size: 16px;
+   line-height: 24px;
+   /* Elevated surface in dark, same as the menus: the draft scrollport inside
+@@ -81,6 +81,16 @@
+   --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+ }
+ 
++.card::before {
++  position: absolute;
++  inset: 0;
++  border-radius: inherit;
++  border-top: 1px solid rgba(193, 241, 255, 0.14);
++  background: linear-gradient(112deg, rgba(174, 238, 255, 0.08), transparent 28%, transparent 72%, rgba(22, 144, 206, 0.06));
++  content: '';
++  pointer-events: none;
++}
++
+ /* No-workspace trigger state: dashed l4 stroke marks the card as a pick-a-
+    workspace affordance rather than a live composer; hover answers in the
+    business blue to invite the click. Native `dashed` has a fixed browser
+diff --git a/packages/client/ui-input-trigger/src/client/MenuView.module.css b/packages/client/ui-input-trigger/src/client/MenuView.module.css
+index 527d1b7c37afcf9f0a39e0c3467887d4e7e72a31..483eb8392895c6ff0e4ef10b29c22573972de331 100644
+--- a/packages/client/ui-input-trigger/src/client/MenuView.module.css
++++ b/packages/client/ui-input-trigger/src/client/MenuView.module.css
+@@ -28,7 +28,7 @@
+   border: 1px solid var(--dsw-alias-border-inverted);
+   border-radius: 12px;
+   background: var(--dsw-specific-menu);
+-  box-shadow: var(--dsw-shadow-lv3);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+ }
+ 
+ .viewport {
+diff --git a/packages/client/ui-layout/src/client/AppFrame.module.css b/packages/client/ui-layout/src/client/AppFrame.module.css
+index ae56780133ee4a4a08b4381ff37aa8d4fdc55247..6bba903fa06382219b583e4b80613ed394f30f41 100644
+--- a/packages/client/ui-layout/src/client/AppFrame.module.css
++++ b/packages/client/ui-layout/src/client/AppFrame.module.css
+@@ -4,7 +4,8 @@
+   grid-template-rows: 100%;
+   height: 100%;
+   overflow: hidden;
+-  background: var(--dsw-alias-bg-base);
++  /* 透明背景：让深蓝数据海流壁纸层（z-index 0）透出；各列自行决定是否着色 */
++  background: transparent;
+   /* Collapse/expand animates the tracks on the deepsuite sider curve
+      (--ds-ease-in-out / --ds-transition-duration-slow, ui-theme base.css). */
+   transition: grid-template-columns var(--ds-transition-duration-slow) var(--ds-ease-in-out);
+diff --git a/packages/client/ui-liquid-glass/README.i18n.yaml b/packages/client/ui-liquid-glass/README.i18n.yaml
+new file mode 100644
+index 0000000000000000000000000000000000000000..4124370a05da53e126865c1c269b8a56bea139c7
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/README.i18n.yaml
+@@ -0,0 +1,6 @@
++# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
++# side as of the last confirmed-consistent state. Both languages carry equal authority;
++# after editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write packages/client/ui-liquid-glass/README.md
++README.md: 8e06980c5d072c0895b1a6826a4754c32eaf6768
++README.zh.md: a1270938388633801e6caefc749d8e40afd5dec5
+diff --git a/packages/client/ui-liquid-glass/README.md b/packages/client/ui-liquid-glass/README.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..8e06980c5d072c0895b1a6826a4754c32eaf6768
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/README.md
+@@ -0,0 +1,35 @@
++# @deepseek-ai/dsh-client-ui-liquid-glass
++
++English | [中文](README.zh.md)
++
++The Deep Ocean background owner and Liquid Glass control plugin. Its Host half registers the `ui-liquid-glass` user-settings namespace. Its browser half owns one fixed `#dsh-liquid-background` Canvas, loads the shared Fluid asset, and contributes a compact panel to `sidebar.footer.action` plus a complete row to `settings.general.item`.
++
++The two controls share one reactive controller. Input changes repaint the Canvas and update Fluid parameters on the next animation frame, then coalesce Host writes for 180 ms. Reloads adopt `$DSH_HOME/settings.yaml`; remote or memory-mode browsers keep a process-local preference. Reset clears each user override so the deployment defaults become authoritative again.
++
++## Settings
++
++| Field | Default | Range or values | Effect |
++|---|---:|---|---|
++| `enabled` | `true` | boolean | Stops or resumes the Fluid animation loop. |
++| `opacity` | `48` | 0–100 | Canvas compositing opacity; light mode applies an additional readability reduction. |
++| `brightness` | `78` | 35–120 | Immediate display brightness for the cyan/blue dye. |
++| `flowSpeed` | `60` | 0–100 | Ambient current cadence and impulse. |
++| `pointerForce` | `55` | 0–100 | Pointer splat strength. |
++| `bloom` | `30` | 0–100 | Bloom intensity; zero removes the Bloom display keyword. |
++| `palette` | `ocean` | `abyss`, `ocean`, `cyan` | Bounded cyan-to-blue hue, saturation, and value ranges. |
++| `quality` | `balanced` | `eco`, `balanced`, `high` | Simulation, dye, pressure, and Bloom framebuffer workload. |
++
++Reduced Motion scales ambient motion and pointer force below the selected values. A hidden document or disabled surface has no active animation frame. Quality changes reuse the existing WebGL context and rebuild only its framebuffers. Plugin disposal removes the Canvas and script, clears timers and listeners, and asks `WEBGL_lose_context` to release GPU resources. WebGL or script failure leaves the static Deep Ocean gradient and all Harness controls usable.
++
++## Model Experience
++
++None, as the package changes browser presentation and user settings only; it does not alter session events, prompts, tools, or provider requests.
++
++#### KV Cache effect
++
++None; the package never assembles model input.
++
++## Known Limitations and Deferred Work
++
++- The Strong Refraction shader remains a separate progressive enhancement because DOM-background capture breaks overlay hit testing; these controls tune the shared Fluid source and CSS Glass materials only.
++- Palette changes affect newly injected dye while existing dye dissipates naturally, so the transition is gradual rather than an immediate framebuffer clear.
+diff --git a/packages/client/ui-liquid-glass/README.zh.md b/packages/client/ui-liquid-glass/README.zh.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..a1270938388633801e6caefc749d8e40afd5dec5
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/README.zh.md
+@@ -0,0 +1,35 @@
++# @deepseek-ai/dsh-client-ui-liquid-glass
++
++[English](README.md) | 中文
++
++Deep Ocean 背景所有者与 Liquid Glass 控制插件。Host 端注册 `ui-liquid-glass` 用户设置命名空间；浏览器端拥有唯一的固定定位 `#dsh-liquid-background` Canvas，加载共享 Fluid 资源，并向 `sidebar.footer.action` 提供快捷面板、向 `settings.general.item` 提供完整设置行。
++
++两个入口共享同一个响应式控制器。输入变化会在下一动画帧重绘 Canvas 并更新 Fluid 参数，Host 写入则以 180 ms 合并。页面重载会采用 `$DSH_HOME/settings.yaml`；远程或内存模式浏览器保留进程内偏好。重置会清除每个用户覆盖值，使部署默认值重新成为权威来源。
++
++## 设置
++
++| 字段 | 默认值 | 范围或选项 | 效果 |
++|---|---:|---|---|
++| `enabled` | `true` | 布尔值 | 停止或恢复 Fluid 动画循环。 |
++| `opacity` | `48` | 0–100 | Canvas 合成透明度；浅色模式会额外降低强度以保证可读性。 |
++| `brightness` | `78` | 35–120 | Cyan / Blue 染料的即时显示亮度。 |
++| `flowSpeed` | `60` | 0–100 | Ambient Flow 的频率与推力。 |
++| `pointerForce` | `55` | 0–100 | 鼠标移动产生的 splat 强度。 |
++| `bloom` | `30` | 0–100 | Bloom 强度；零值会移除 Bloom 显示关键字。 |
++| `palette` | `ocean` | `abyss`、`ocean`、`cyan` | 受限于 Cyan 到 Blue 的色相、饱和度与明度范围。 |
++| `quality` | `balanced` | `eco`、`balanced`、`high` | Simulation、Dye、Pressure 与 Bloom framebuffer 负载。 |
++
++系统开启“减少动态效果”时，Ambient Flow 与鼠标推力会在所选值基础上进一步降低。页面隐藏或效果关闭时不会保留活动动画帧。质量切换复用现有 WebGL Context，只重建 framebuffer。插件卸载会移除 Canvas 与脚本、清理计时器和监听器，并通过 `WEBGL_lose_context` 请求释放 GPU 资源。WebGL 或脚本失败时保留静态 Deep Ocean 渐变，Harness 的全部控件仍可使用。
++
++## 模型体验
++
++无。该包只改变浏览器表现和用户设置，不修改 Session Event、Prompt、Tool 或 Provider Request。
++
++#### KV Cache 影响
++
++无；该包不会组装模型输入。
++
++## 已知限制与延后工作
++
++- Strong Refraction Shader 仍是独立的渐进增强；DOM 背景捕获会破坏浮层命中测试，因此这些控件只调整共享 Fluid 来源与 CSS Glass 材质。
++- 配色变化作用于新注入的染料，已有染料会自然消散，所以颜色过渡是渐进的，而不是立即清空 framebuffer。
+diff --git a/packages/client/ui-liquid-glass/package.json b/packages/client/ui-liquid-glass/package.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..b0fbed39cf582ff3b3b81fcf21de3a4140b50baa
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/package.json
+@@ -0,0 +1,82 @@
++{
++  "name": "@deepseek-ai/dsh-client-ui-liquid-glass",
++  "description": "Deep Ocean fluid background owner with Host-backed quick and full Liquid Glass controls",
++  "version": "0.1.0-rc.5",
++  "publishConfig": {
++    "access": "public"
++  },
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
++    "directory": "packages/client/ui-liquid-glass"
++  },
++  "type": "module",
++  "main": "lib/index.js",
++  "types": "lib/types/index.d.ts",
++  "exports": {
++    ".": {
++      "types": "./lib/types/index.d.ts",
++      "default": "./lib/index.js"
++    },
++    "./invariant": {
++      "types": "./lib/types/invariant.d.ts",
++      "default": "./lib/invariant.js"
++    },
++    "./client": {
++      "types": "./lib/types/client/index.d.ts",
++      "default": "./lib/client.js"
++    },
++    "./src/*": "./src/*",
++    "./package.json": "./package.json"
++  },
++  "dsh": {
++    "client": {
++      "inject": [
++        "@deepseek-ai/dsh-client-runtime",
++        "@deepseek-ai/dsh-client-locale",
++        "@deepseek-ai/dsh-client-ui-settings",
++        "@deepseek-ai/dsh-client-ui-sidebar"
++      ],
++      "platform": "web"
++    }
++  },
++  "license": "MIT",
++  "files": [
++    "lib/index.js",
++    "lib/invariant.js",
++    "lib/client.js",
++    "lib/types/**/*.d.ts"
++  ],
++  "scripts": {
++    "bundle": "tsdown",
++    "watch": "tsdown --watch"
++  },
++  "dependencies": {
++    "@deepseek-ai/dsh-settings": "workspace:^",
++    "@deepseek-ai/schemastery": "workspace:^"
++  },
++  "peerDependencies": {
++    "@deepseek-ai/cordis": "workspace:^",
++    "@deepseek-ai/dsh-client-locale": "workspace:^",
++    "@deepseek-ai/dsh-client-runtime": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-settings": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-sidebar": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
++    "@deepseek-ai/dsh-invariants": "workspace:^",
++    "react": "^18.2.0"
++  },
++  "devDependencies": {
++    "@deepseek-ai/cordis": "workspace:^",
++    "@deepseek-ai/dsh-client-locale": "workspace:^",
++    "@deepseek-ai/dsh-client-runtime": "workspace:^",
++    "@deepseek-ai/dsh-client-test-runtime": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-primitives": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-settings": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-sidebar": "workspace:^",
++    "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
++    "@deepseek-ai/dsh-invariants": "workspace:^",
++    "@types/react": "~18.3.1",
++    "react": "^18.2.0"
++  }
++}
+diff --git a/packages/client/ui-liquid-glass/src/client/LiquidControls.module.css b/packages/client/ui-liquid-glass/src/client/LiquidControls.module.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..54090721dac59ae156e355cb5a3f603f0f4a2b35
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/LiquidControls.module.css
+@@ -0,0 +1,489 @@
++.quickRoot {
++  position: relative;
++  width: 100%;
++}
++
++.quickTrigger,
++.quickTriggerRail {
++  box-sizing: border-box;
++  display: flex;
++  align-items: center;
++  border: 0;
++  color: var(--dsw-alias-label-primary);
++  background: transparent;
++  font: inherit;
++  cursor: pointer;
++  transition: background 180ms var(--ds-ease-in-out), transform 180ms var(--ds-ease-in-out);
++}
++
++.quickTrigger {
++  width: calc(100% + 8px);
++  height: 34px;
++  gap: 8px;
++  margin: 4px -4px;
++  padding: 6px 10px;
++  border-radius: 12px;
++}
++
++.quickTrigger > span:first-of-type {
++  flex: 1;
++  min-width: 0;
++  text-align: left;
++  white-space: nowrap;
++}
++
++.quickTriggerRail {
++  justify-content: center;
++  width: 36px;
++  height: 36px;
++  margin: 4px 0;
++  padding: 0;
++  border-radius: 50%;
++}
++
++.quickTrigger:hover,
++.quickTriggerRail:hover,
++.quickTrigger[aria-expanded='true'],
++.quickTriggerRail[aria-expanded='true'] {
++  background: var(--dsw-alias-interactive-bg-hover);
++}
++
++.quickTrigger:active,
++.quickTriggerRail:active {
++  transform: scale(0.98);
++}
++
++.quickPanel {
++  position: absolute;
++  z-index: 900;
++  left: calc(100% + 14px);
++  bottom: 0;
++  box-sizing: border-box;
++  width: min(326px, calc(100vw - 90px));
++  padding: 16px;
++  border: 1px solid var(--dsh-glass-border);
++  border-radius: var(--dsh-glass-radius-lg);
++  color: var(--dsw-alias-label-primary);
++  background: var(--dsh-glass-bg-strong);
++  backdrop-filter: var(--dsh-glass-blur-strong);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-strong);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
++  animation: panel-in 180ms var(--ds-ease-in-out);
++}
++
++.quickPanel::before {
++  position: absolute;
++  inset: 0;
++  border-radius: inherit;
++  background: var(--dsh-liquid-panel-reflection);
++  content: '';
++  pointer-events: none;
++}
++
++.quickHeader,
++.settingsHeader {
++  position: relative;
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 16px;
++}
++
++.quickHeader strong {
++  display: block;
++  font-size: 15px;
++  font-weight: 500;
++  line-height: 22px;
++}
++
++.quickHeader small {
++  display: block;
++  margin-top: 1px;
++  color: var(--dsw-alias-label-tertiary);
++  font-size: 12px;
++  line-height: 18px;
++}
++
++.quickSliders {
++  position: relative;
++  display: grid;
++  gap: 13px;
++  margin-top: 16px;
++  padding-top: 14px;
++  border-top: 1px solid var(--dsw-alias-border-l2);
++}
++
++.settingsRoot {
++  display: flex;
++  flex-direction: column;
++  gap: 20px;
++  padding: 22px 0;
++  border-bottom: 1px solid var(--dsw-alias-border-l2);
++  color: var(--dsw-alias-label-primary);
++}
++
++.settingsHeader h3 {
++  margin: 0;
++  font-size: 16px;
++  font-weight: 500;
++  line-height: 24px;
++}
++
++.settingsHeader p,
++.choiceGroup > p {
++  margin: 4px 0 0;
++  color: var(--dsw-alias-label-tertiary);
++  font-size: 12px;
++  line-height: 18px;
++}
++
++.statusLine {
++  display: inline-flex;
++  align-items: center;
++  align-self: flex-start;
++  gap: 7px;
++  margin-top: -10px;
++  color: var(--dsw-alias-label-secondary);
++  font-size: 12px;
++  line-height: 18px;
++}
++
++.liveDot,
++.idleDot {
++  flex: none;
++  width: 7px;
++  height: 7px;
++  border-radius: 50%;
++}
++
++.liveDot {
++  background: var(--dsh-liquid-accent);
++  box-shadow: 0 0 10px var(--dsh-liquid-accent-glow);
++}
++
++.idleDot {
++  background: var(--dsw-alias-label-caption);
++}
++
++.sliderGrid {
++  display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
++  gap: 10px;
++}
++
++.sliderRow,
++.sliderCompact {
++  display: flex;
++  flex-direction: column;
++  gap: 9px;
++  min-width: 0;
++}
++
++.sliderRow {
++  padding: 14px;
++  border: 1px solid var(--dsh-glass-border);
++  border-radius: var(--dsh-glass-radius-md);
++  background: var(--dsh-glass-bg-soft);
++  box-shadow: inset 0 1px 0 var(--dsh-glass-highlight);
++}
++
++.sliderHeading {
++  display: flex;
++  align-items: flex-start;
++  justify-content: space-between;
++  gap: 10px;
++}
++
++.sliderLabel {
++  display: block;
++  color: var(--dsw-alias-label-primary);
++  font-size: 13px;
++  font-weight: 500;
++  line-height: 20px;
++}
++
++.sliderDescription {
++  display: block;
++  color: var(--dsw-alias-label-tertiary);
++  font-size: 11px;
++  line-height: 16px;
++}
++
++.sliderValue {
++  flex: none;
++  min-width: 38px;
++  color: var(--dsh-liquid-accent);
++  text-align: right;
++  font-variant-numeric: tabular-nums;
++  font-size: 12px;
++  line-height: 20px;
++}
++
++.range {
++  width: 100%;
++  height: 18px;
++  margin: 0;
++  padding: 0;
++  appearance: none;
++  background: transparent;
++  cursor: pointer;
++}
++
++.range::-webkit-slider-runnable-track {
++  height: 4px;
++  border-radius: var(--dsh-glass-radius-pill);
++  background: linear-gradient(
++    90deg,
++    var(--dsh-liquid-accent) 0 var(--dsh-liquid-range-progress),
++    var(--dsh-liquid-range-track) var(--dsh-liquid-range-progress) 100%
++  );
++}
++
++.range::-webkit-slider-thumb {
++  width: 16px;
++  height: 16px;
++  margin-top: -6px;
++  border: 1px solid var(--dsh-liquid-thumb-border);
++  border-radius: 50%;
++  appearance: none;
++  background: var(--dsh-liquid-thumb);
++  box-shadow: 0 2px 10px var(--dsh-liquid-accent-glow);
++}
++
++.range::-moz-range-track {
++  height: 4px;
++  border-radius: var(--dsh-glass-radius-pill);
++  background: var(--dsh-liquid-range-track);
++}
++
++.range::-moz-range-progress {
++  height: 4px;
++  border-radius: var(--dsh-glass-radius-pill);
++  background: var(--dsh-liquid-accent);
++}
++
++.range::-moz-range-thumb {
++  width: 16px;
++  height: 16px;
++  border: 1px solid var(--dsh-liquid-thumb-border);
++  border-radius: 50%;
++  background: var(--dsh-liquid-thumb);
++  box-shadow: 0 2px 10px var(--dsh-liquid-accent-glow);
++}
++
++.range:focus-visible {
++  outline: 2px solid var(--dsh-liquid-accent);
++  outline-offset: 3px;
++  border-radius: var(--dsh-glass-radius-pill);
++}
++
++.switchLabel {
++  display: inline-flex;
++  align-items: center;
++  gap: 8px;
++  color: var(--dsw-alias-label-secondary);
++  white-space: nowrap;
++  font-size: 12px;
++  line-height: 18px;
++  cursor: pointer;
++}
++
++.switchInput {
++  position: absolute;
++  width: 1px;
++  height: 1px;
++  opacity: 0;
++  pointer-events: none;
++}
++
++.switchTrack {
++  position: relative;
++  width: 34px;
++  height: 20px;
++  border: 1px solid var(--dsh-glass-border);
++  border-radius: var(--dsh-glass-radius-pill);
++  background: var(--dsh-liquid-range-track);
++  transition: background 180ms var(--ds-ease-in-out);
++}
++
++.switchTrack > span {
++  position: absolute;
++  top: 2px;
++  left: 2px;
++  width: 14px;
++  height: 14px;
++  border-radius: 50%;
++  background: var(--dsh-liquid-thumb);
++  box-shadow: 0 1px 5px var(--dsh-liquid-accent-glow);
++  transition: transform 180ms var(--ds-ease-in-out);
++}
++
++.switchInput:checked + .switchTrack {
++  background: var(--dsh-liquid-accent);
++}
++
++.switchInput:checked + .switchTrack > span {
++  transform: translateX(14px);
++}
++
++.switchInput:focus-visible + .switchTrack {
++  outline: 2px solid var(--dsh-liquid-accent);
++  outline-offset: 2px;
++}
++
++.choiceGroup {
++  min-width: 0;
++  margin: 0;
++  padding: 0;
++  border: 0;
++}
++
++.choiceGroup legend {
++  padding: 0;
++  font-size: 13px;
++  font-weight: 500;
++  line-height: 20px;
++}
++
++.paletteGrid,
++.qualityGrid {
++  display: grid;
++  grid-template-columns: repeat(3, minmax(0, 1fr));
++  gap: 8px;
++  margin-top: 10px;
++}
++
++.choiceButton,
++.choiceSelected {
++  display: flex;
++  align-items: center;
++  gap: 10px;
++  min-width: 0;
++  padding: 11px 12px;
++  border: 1px solid var(--dsh-glass-border);
++  border-radius: var(--dsh-glass-radius-md);
++  color: var(--dsw-alias-label-primary);
++  text-align: left;
++  background: var(--dsh-glass-bg-soft);
++  font: inherit;
++  cursor: pointer;
++  transition: background 180ms var(--ds-ease-in-out), border-color 180ms var(--ds-ease-in-out), transform 180ms var(--ds-ease-in-out);
++}
++
++.qualityGrid .choiceButton,
++.qualityGrid .choiceSelected {
++  flex-direction: column;
++  align-items: flex-start;
++  gap: 2px;
++}
++
++.choiceButton:hover,
++.choiceSelected {
++  border-color: var(--dsh-liquid-accent-border);
++  background: var(--dsh-liquid-choice-active);
++}
++
++.choiceButton:active,
++.choiceSelected:active {
++  transform: scale(0.99);
++}
++
++.choiceButton strong,
++.choiceSelected strong {
++  display: block;
++  font-size: 12px;
++  font-weight: 500;
++  line-height: 18px;
++}
++
++.choiceButton small,
++.choiceSelected small {
++  display: block;
++  color: var(--dsw-alias-label-tertiary);
++  font-size: 10px;
++  line-height: 15px;
++}
++
++.swatch {
++  flex: none;
++  width: 30px;
++  height: 30px;
++  border: 1px solid var(--dsh-glass-border);
++  border-radius: 10px;
++  box-shadow: inset 0 1px 0 var(--dsh-glass-highlight), 0 5px 14px var(--dsh-liquid-accent-glow);
++}
++
++.swatchAbyss { background: var(--dsh-liquid-swatch-abyss); }
++.swatchOcean { background: var(--dsh-liquid-swatch-ocean); }
++.swatchCyan { background: var(--dsh-liquid-swatch-cyan); }
++
++.settingsFooter {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 16px;
++  padding-top: 4px;
++  color: var(--dsw-alias-label-tertiary);
++  font-size: 11px;
++  line-height: 16px;
++}
++
++.resetButton {
++  position: relative;
++  flex: none;
++  min-height: 30px;
++  padding: 5px 11px;
++  border: 1px solid var(--dsh-glass-border);
++  border-radius: var(--dsh-glass-radius-pill);
++  color: var(--dsw-alias-label-secondary);
++  background: var(--dsh-glass-bg-soft);
++  font: inherit;
++  font-size: 12px;
++  cursor: pointer;
++}
++
++.quickPanel > .resetButton {
++  width: 100%;
++  margin-top: 16px;
++}
++
++.resetButton:hover {
++  color: var(--dsw-alias-label-primary);
++  background: var(--dsw-alias-interactive-bg-hover);
++}
++
++@keyframes panel-in {
++  from {
++    opacity: 0;
++    transform: translateX(-6px) scale(0.985);
++  }
++}
++
++@media (max-width: 760px) {
++  .quickPanel {
++    position: fixed;
++    right: 12px;
++    bottom: 12px;
++    left: 12px;
++    width: auto;
++  }
++
++  .sliderGrid,
++  .paletteGrid,
++  .qualityGrid {
++    grid-template-columns: 1fr;
++  }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .quickPanel,
++  .quickTrigger,
++  .quickTriggerRail,
++  .choiceButton,
++  .choiceSelected,
++  .switchTrack,
++  .switchTrack > span {
++    transition: none;
++    animation: none;
++  }
++}
+diff --git a/packages/client/ui-liquid-glass/src/client/LiquidSettingsRow.tsx b/packages/client/ui-liquid-glass/src/client/LiquidSettingsRow.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..a6d85fb87b76d58f05294cbc34248473923817b0
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/LiquidSettingsRow.tsx
+@@ -0,0 +1,111 @@
++/** Complete Liquid Glass controls registered into General Settings. */
++
++import type { InjectFace, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
++import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
++import type { LiquidPalette, LiquidQuality } from '../liquid-settings.ts'
++import type { LiquidLocaleProps } from './contract.ts'
++import type { LiquidControlInjected } from './types.ts'
++import { LiquidSlider } from './LiquidSlider.tsx'
++import css from './LiquidControls.module.css'
++
++/** Composed props for the General Settings contribution. */
++export type LiquidSettingsRowProps = PropsRuntime<'settings.general.item'>
++  & LiquidLocaleProps & InjectFace<LiquidControlInjected>
++
++const PALETTES: readonly LiquidPalette[] = ['abyss', 'ocean', 'cyan']
++const QUALITIES: readonly LiquidQuality[] = ['eco', 'balanced', 'high']
++const SWATCH_CLASSES: Record<LiquidPalette, string> = {
++  abyss: css.swatchAbyss ?? '',
++  ocean: css.swatchOcean ?? '',
++  cyan: css.swatchCyan ?? '',
++}
++
++/** Render the full Deep Ocean fluid settings surface.
++ * @param props - locale and shared controller face.
++ * @returns the complete settings row.
++ */
++export function LiquidSettingsRow({
++  t, useLiquid, setLiquidField, resetLiquid,
++}: LiquidSettingsRowProps) {
++  const state = useLiquid(value => value)
++  const status = state.engineStatus === 'ready'
++    ? (state.writable ? t('status.saved') : t('status.local'))
++    : t('status.fallback')
++
++  return (
++    <section className={css.settingsRoot} aria-labelledby="dsh-liquid-settings-title">
++      <div className={css.settingsHeader}>
++        <span>
++          <h3 id="dsh-liquid-settings-title">{t('settings.title')}</h3>
++          <p>{t('settings.description')}</p>
++        </span>
++        <label className={css.switchLabel}>
++          <input
++            className={css.switchInput}
++            type="checkbox"
++            checked={state.enabled}
++            onChange={(event) => { setLiquidField('enabled', event.currentTarget.checked) }}
++          />
++          <span className={css.switchTrack} aria-hidden="true"><span /></span>
++          <span>{state.enabled ? t('enabled.on') : t('enabled.off')}</span>
++        </label>
++      </div>
++
++      <div className={css.statusLine}>
++        <span className={state.engineStatus === 'ready' ? css.liveDot : css.idleDot} aria-hidden="true" />
++        {status}
++      </div>
++
++      <div className={css.sliderGrid}>
++        <LiquidSlider field="opacity" label={t('opacity.label')} description={t('opacity.description')} value={state.opacity} onChange={setLiquidField} />
++        <LiquidSlider field="brightness" label={t('brightness.label')} description={t('brightness.description')} value={state.brightness} min={35} max={120} onChange={setLiquidField} />
++        <LiquidSlider field="flowSpeed" label={t('flow.label')} description={t('flow.description')} value={state.flowSpeed} onChange={setLiquidField} />
++        <LiquidSlider field="pointerForce" label={t('pointer.label')} description={t('pointer.description')} value={state.pointerForce} onChange={setLiquidField} />
++        <LiquidSlider field="bloom" label={t('bloom.label')} description={t('bloom.description')} value={state.bloom} onChange={setLiquidField} />
++      </div>
++
++      <fieldset className={css.choiceGroup}>
++        <legend>{t('palette.label')}</legend>
++        <p>{t('palette.description')}</p>
++        <div className={css.paletteGrid}>
++          {PALETTES.map(palette => (
++            <button
++              key={palette}
++              type="button"
++              className={state.palette === palette ? css.choiceSelected : css.choiceButton}
++              aria-pressed={state.palette === palette}
++              onClick={() => { setLiquidField('palette', palette) }}
++            >
++              <span className={`${css.swatch} ${SWATCH_CLASSES[palette]}`} aria-hidden="true" />
++              <span><strong>{t(`palette.${palette}`)}</strong><small>{t(`palette.${palette}.hint`)}</small></span>
++            </button>
++          ))}
++        </div>
++      </fieldset>
++
++      <fieldset className={css.choiceGroup}>
++        <legend>{t('quality.label')}</legend>
++        <p>{t('quality.description')}</p>
++        <div className={css.qualityGrid}>
++          {QUALITIES.map(quality => (
++            <button
++              key={quality}
++              type="button"
++              className={state.quality === quality ? css.choiceSelected : css.choiceButton}
++              aria-pressed={state.quality === quality}
++              onClick={() => { setLiquidField('quality', quality) }}
++            >
++              <strong>{t(`quality.${quality}`)}</strong>
++              <small>{t(`quality.${quality}.hint`)}</small>
++            </button>
++          ))}
++        </div>
++      </fieldset>
++
++      <div className={css.settingsFooter}>
++        <span>{t('footer.hint')}</span>
++        <button type="button" className={css.resetButton} onClick={resetLiquid}>{t('reset')}</button>
++      </div>
++    </section>
++  )
++}
+diff --git a/packages/client/ui-liquid-glass/src/client/LiquidSlider.tsx b/packages/client/ui-liquid-glass/src/client/LiquidSlider.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..f63381d62caa3f5e8d55a15e1910c5cdebd6e2df
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/LiquidSlider.tsx
+@@ -0,0 +1,61 @@
++/** Shared labeled range control for the quick and full Liquid panels. */
++
++import type { CSSProperties } from 'react'
++import type { LiquidSettings } from '../liquid-settings.ts'
++import css from './LiquidControls.module.css'
++
++/** Numeric settings fields rendered as percentage sliders. */
++export type LiquidSliderField = 'opacity' | 'brightness' | 'flowSpeed' | 'pointerForce' | 'bloom'
++
++/** Labeled slider input props. */
++export interface LiquidSliderProps {
++  /** Field persisted when the input changes. */
++  field: LiquidSliderField
++  /** Accessible and visible label. */
++  label: string
++  /** Optional supporting copy. */
++  description?: string
++  /** Current numeric value. */
++  value: number
++  /** Minimum accepted value. */
++  min?: number
++  /** Maximum accepted value. */
++  max?: number
++  /** Compact layout inside the sidebar popover. */
++  compact?: boolean
++  /** Route a new value to the shared controller. */
++  onChange: <K extends keyof LiquidSettings>(field: K, value: LiquidSettings[K]) => void
++}
++
++/** Render one percentage range with a live output value.
++ * @param props - slider presentation and write callback.
++ * @returns the labeled range row.
++ */
++export function LiquidSlider({
++  field, label, description, value, min = 0, max = 100, compact = false, onChange,
++}: LiquidSliderProps) {
++  const progress = ((value - min) / (max - min)) * 100
++  const style = { '--dsh-liquid-range-progress': `${String(progress)}%` } as CSSProperties
++  return (
++    <label className={compact ? css.sliderCompact : css.sliderRow}>
++      <span className={css.sliderHeading}>
++        <span>
++          <span className={css.sliderLabel}>{label}</span>
++          {description !== undefined && <span className={css.sliderDescription}>{description}</span>}
++        </span>
++        <output className={css.sliderValue}>{value}%</output>
++      </span>
++      <input
++        className={css.range}
++        type="range"
++        min={min}
++        max={max}
++        step={1}
++        value={value}
++        aria-label={label}
++        style={style}
++        onChange={(event) => { onChange(field, Number(event.currentTarget.value)) }}
++      />
++    </label>
++  )
++}
+diff --git a/packages/client/ui-liquid-glass/src/client/QuickLiquidControl.tsx b/packages/client/ui-liquid-glass/src/client/QuickLiquidControl.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..5f9bd67b8b313d2c316039a9a2cd2c19452dfa31
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/QuickLiquidControl.tsx
+@@ -0,0 +1,89 @@
++/** Sidebar footer action exposing the high-frequency Liquid controls. */
++
++import { useEffect, useRef, useState } from 'react'
++import { IconSparkle16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
++import type { InjectFace, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
++import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
++import type { LiquidLocaleProps } from './contract.ts'
++import type { LiquidControlInjected } from './types.ts'
++import { LiquidSlider } from './LiquidSlider.tsx'
++import css from './LiquidControls.module.css'
++
++/** Composed props for the Sidebar footer contribution. */
++export type QuickLiquidControlProps = PropsRuntime<'sidebar.footer.action'>
++  & LiquidLocaleProps & InjectFace<LiquidControlInjected>
++
++/** Render the Sidebar trigger and Glass Level 3 quick panel.
++ * @param props - slot owner state, locale, and controller face.
++ * @returns the Sidebar action and its conditional popover.
++ */
++export function QuickLiquidControl({
++  wide, t, useLiquid, setLiquidField, resetLiquid,
++}: QuickLiquidControlProps) {
++  const state = useLiquid(value => value)
++  const [open, setOpen] = useState(false)
++  const root = useRef<HTMLDivElement>(null)
++
++  useEffect(() => {
++    if (!open) return
++    const closeOutside = (event: PointerEvent): void => {
++      if (!root.current?.contains(event.target as Node)) setOpen(false)
++    }
++    const closeEscape = (event: KeyboardEvent): void => {
++      if (event.key === 'Escape') setOpen(false)
++    }
++    document.addEventListener('pointerdown', closeOutside)
++    document.addEventListener('keydown', closeEscape)
++    return () => {
++      document.removeEventListener('pointerdown', closeOutside)
++      document.removeEventListener('keydown', closeEscape)
++    }
++  }, [open])
++
++  return (
++    <div ref={root} className={css.quickRoot}>
++      <Tooltip label={t('quick.title')} delayMs={500} disabled={wide}>
++        <button
++          type="button"
++          className={wide ? css.quickTrigger : css.quickTriggerRail}
++          aria-label={t('quick.title')}
++          aria-expanded={open}
++          aria-haspopup="dialog"
++          onClick={() => { setOpen(value => !value) }}
++        >
++          <IconSparkle16 size={wide ? 16 : 18} />
++          {wide && <span>{t('quick.title')}</span>}
++          {wide && <span className={state.enabled ? css.liveDot : css.idleDot} aria-hidden="true" />}
++        </button>
++      </Tooltip>
++
++      {open && (
++        <section className={css.quickPanel} role="dialog" aria-label={t('quick.panelLabel')}>
++          <div className={css.quickHeader}>
++            <span>
++              <strong>{t('quick.heading')}</strong>
++              <small>{state.engineStatus === 'ready' ? t('status.ready') : t('status.fallback')}</small>
++            </span>
++            <label className={css.switchLabel}>
++              <input
++                className={css.switchInput}
++                type="checkbox"
++                checked={state.enabled}
++                onChange={(event) => { setLiquidField('enabled', event.currentTarget.checked) }}
++              />
++              <span className={css.switchTrack} aria-hidden="true"><span /></span>
++              <span>{state.enabled ? t('enabled.on') : t('enabled.off')}</span>
++            </label>
++          </div>
++          <div className={css.quickSliders}>
++            <LiquidSlider compact field="opacity" label={t('opacity.label')} value={state.opacity} onChange={setLiquidField} />
++            <LiquidSlider compact field="brightness" label={t('brightness.label')} value={state.brightness} min={35} max={120} onChange={setLiquidField} />
++            <LiquidSlider compact field="flowSpeed" label={t('flow.label')} value={state.flowSpeed} onChange={setLiquidField} />
++            <LiquidSlider compact field="pointerForce" label={t('pointer.label')} value={state.pointerForce} onChange={setLiquidField} />
++          </div>
++          <button type="button" className={css.resetButton} onClick={resetLiquid}>{t('reset')}</button>
++        </section>
++      )}
++    </div>
++  )
++}
+diff --git a/packages/client/ui-liquid-glass/src/client/contract.ts b/packages/client/ui-liquid-glass/src/client/contract.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f8efe28b2801e65a6d4d5888ac4f93b4cf3a7c8
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/contract.ts
+@@ -0,0 +1,14 @@
++/** Slot-locale contract shared by both Liquid control components. */
++
++import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
++import type { LiquidKey } from './locales.ts'
++
++declare module '@deepseek-ai/dsh-client-ui-slots' {
++  interface LocaleNamespaceMap {
++    /** Deep Ocean quick and full settings copy. */
++    'settings.liquid': LiquidKey
++  }
++}
++
++/** Framework-provided translation share for the Liquid dictionary. */
++export type LiquidLocaleProps = PropsLocale<'settings.liquid'>
+diff --git a/packages/client/ui-liquid-glass/src/client/index.ts b/packages/client/ui-liquid-glass/src/client/index.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..7f25a0b4d75c39c56482c3ba1f3b639276182321
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/index.ts
+@@ -0,0 +1,55 @@
++/** Client plugin owning the Deep Ocean Canvas and its two control surfaces. */
++
++import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
++import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
++import type {} from '@deepseek-ai/dsh-client-locale/client'
++import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
++import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
++import {
++  LIQUID_SETTINGS_NAMESPACE, type LiquidSettings,
++} from '../liquid-settings.ts'
++import { LiquidSettingsRow } from './LiquidSettingsRow.tsx'
++import { QuickLiquidControl } from './QuickLiquidControl.tsx'
++import type {} from './contract.ts'
++import { en, zh } from './locales.ts'
++import { LiquidRuntimeController } from './runtime-controller.ts'
++import type { LiquidControlInjected } from './types.ts'
++
++const NS = 'settings.liquid'
++
++/** Required services for settings persistence, dictionaries, and slot composition. */
++export const inject = ['slots', 'locale', 'settingsScope']
++
++/** Mount the Canvas controller and register both control surfaces.
++ * @param ctx - Client root context.
++ */
++export function apply(ctx: ClientContext): void {
++  const host: SettingsScope<LiquidSettings> = ctx.settingsScope.bind<LiquidSettings>({
++    namespace: LIQUID_SETTINGS_NAMESPACE,
++  })
++  const controller = new LiquidRuntimeController(host)
++  const face = (): LiquidControlInjected => ({
++    hooks: { liquid: controller.store },
++    setLiquidField: (field, value) => { controller.setField(field, value) },
++    resetLiquid: () => { controller.reset() },
++  })
++
++  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-liquid-glass: dictionaries')
++  ctx.effect(() => () => { controller.dispose() }, 'ui-liquid-glass: Canvas and WebGL lifecycle')
++
++  ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
++    name: 'sidebar.footer.action',
++    id: 'liquid-glass',
++    order: 20,
++    locale: NS,
++    inject: face,
++  }, QuickLiquidControl))
++
++  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
++    name: 'settings.general.item',
++    id: 'liquid-glass',
++    order: 15,
++    locale: NS,
++    inject: face,
++  }, LiquidSettingsRow))
++}
+diff --git a/packages/client/ui-liquid-glass/src/client/locales.ts b/packages/client/ui-liquid-glass/src/client/locales.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..622e0411dd1b39636967af94e54be86741a7dfed
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/locales.ts
+@@ -0,0 +1,90 @@
++/** `settings.liquid` dictionaries for the quick and full Deep Ocean controls. */
++
++/** Simplified Chinese dictionary and key-set authority. */
++export const zh = {
++  'quick.title': '液体效果',
++  'quick.panelLabel': '液体效果快捷控制',
++  'quick.heading': 'Deep Ocean',
++  'settings.title': 'Deep Ocean 液体背景',
++  'settings.description': '调整流体可见度、运动、交互和 GPU 质量；所有改动会即时预览。',
++  'enabled.on': '已开启',
++  'enabled.off': '已关闭',
++  'status.ready': 'WebGL 实时运行',
++  'status.saved': 'WebGL 运行中 · 已同步到设置',
++  'status.local': 'WebGL 运行中 · 当前浏览器生效',
++  'status.fallback': '静态渐变降级',
++  'opacity.label': '整体可见度',
++  'opacity.description': '控制液体层在界面后的透明度。',
++  'brightness.label': '液体亮度',
++  'brightness.description': '直接压暗或提亮 Cyan / Blue 流体。',
++  'flow.label': '流动速度',
++  'flow.description': '控制无操作时的持续洋流速度。',
++  'pointer.label': '鼠标扰动',
++  'pointer.description': '控制光标移动产生的流体推力。',
++  'bloom.label': 'Bloom 光晕',
++  'bloom.description': '控制亮边扩散，建议保持克制。',
++  'palette.label': '深海配色',
++  'palette.description': '所有预设都限制在 Cyan 到 Deep Blue 范围。',
++  'palette.abyss': 'Abyss',
++  'palette.abyss.hint': '最暗、最克制',
++  'palette.ocean': 'Ocean',
++  'palette.ocean.hint': '平衡的默认层次',
++  'palette.cyan': 'Cyan',
++  'palette.cyan.hint': '更清晰的青色高光',
++  'quality.label': '渲染质量',
++  'quality.description': '切换时只重建 Fluid framebuffer，不创建额外 WebGL Context。',
++  'quality.eco': '节能',
++  'quality.eco.hint': '96 / 512，适合低功耗',
++  'quality.balanced': '平衡',
++  'quality.balanced.hint': '128 / 1024，推荐',
++  'quality.high': '高质量',
++  'quality.high.hint': '192 / 1024，更细腻',
++  'footer.hint': '系统“减少动态效果”开启时，流动与鼠标扰动会自动进一步降低。',
++  reset: '恢复默认值',
++} satisfies Record<string, string>
++
++/** Liquid settings dictionary key union. */
++export type LiquidKey = keyof typeof zh
++
++/** English dictionary checked against the Chinese key set. */
++export const en = {
++  'quick.title': 'Liquid effects',
++  'quick.panelLabel': 'Liquid effects quick controls',
++  'quick.heading': 'Deep Ocean',
++  'settings.title': 'Deep Ocean fluid background',
++  'settings.description': 'Tune visibility, motion, interaction, and GPU quality with an immediate preview.',
++  'enabled.on': 'Enabled',
++  'enabled.off': 'Disabled',
++  'status.ready': 'WebGL running live',
++  'status.saved': 'WebGL running · synced to Settings',
++  'status.local': 'WebGL running · this browser only',
++  'status.fallback': 'Static gradient fallback',
++  'opacity.label': 'Overall visibility',
++  'opacity.description': 'Controls the fluid layer opacity behind the interface.',
++  'brightness.label': 'Fluid brightness',
++  'brightness.description': 'Directly darkens or brightens the Cyan / Blue fluid.',
++  'flow.label': 'Flow speed',
++  'flow.description': 'Controls the ambient current while the pointer is idle.',
++  'pointer.label': 'Pointer disturbance',
++  'pointer.description': 'Controls the fluid impulse produced by pointer movement.',
++  'bloom.label': 'Bloom glow',
++  'bloom.description': 'Controls bright-edge diffusion; restraint is recommended.',
++  'palette.label': 'Deep Ocean palette',
++  'palette.description': 'Every preset stays inside the Cyan to Deep Blue range.',
++  'palette.abyss': 'Abyss',
++  'palette.abyss.hint': 'Darkest and most restrained',
++  'palette.ocean': 'Ocean',
++  'palette.ocean.hint': 'Balanced default depth',
++  'palette.cyan': 'Cyan',
++  'palette.cyan.hint': 'Clearer aqua highlights',
++  'quality.label': 'Render quality',
++  'quality.description': 'Switching rebuilds Fluid framebuffers without creating another WebGL context.',
++  'quality.eco': 'Eco',
++  'quality.eco.hint': '96 / 512 for lower power',
++  'quality.balanced': 'Balanced',
++  'quality.balanced.hint': '128 / 1024, recommended',
++  'quality.high': 'High',
++  'quality.high.hint': '192 / 1024, finer detail',
++  'footer.hint': 'Reduced Motion automatically lowers ambient flow and pointer disturbance further.',
++  reset: 'Restore defaults',
++} satisfies Record<LiquidKey, string>
+diff --git a/packages/client/ui-liquid-glass/src/client/runtime-controller.ts b/packages/client/ui-liquid-glass/src/client/runtime-controller.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..1ea1aaa564d69a35658376ffc73e7ca546a3e6c6
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/runtime-controller.ts
+@@ -0,0 +1,253 @@
++/** Browser owner for the fluid Canvas, runtime bridge, and shared settings snapshot. */
++
++import {
++  createSnapshotStore, type SettingsScope, type SnapshotStore,
++} from '@deepseek-ai/dsh-client-runtime/client'
++import {
++  DEFAULT_LIQUID_SETTINGS, type LiquidPalette, type LiquidQuality, type LiquidSettings,
++} from '../liquid-settings.ts'
++
++const PLUGIN_ID = '@deepseek-ai/dsh-client-ui-liquid-glass'
++const CANVAS_ID = 'dsh-liquid-background'
++const SCRIPT_ID = 'dsh-liquid-fluid-engine'
++const ENGINE_URL = '/fluid-wallpaper-script.js'
++const WRITE_DELAY_MS = 180
++
++/** Engine readiness shown by both control surfaces. */
++export type LiquidEngineStatus = 'loading' | 'ready' | 'fallback'
++
++/** Shared UI snapshot: durable values plus transport and engine readiness. */
++export interface LiquidRuntimeState extends LiquidSettings {
++  /** Settings namespace synchronization state. */
++  syncStatus: 'loading' | 'ready' | 'unavailable'
++  /** Whether changes persist to the Host document. */
++  writable: boolean
++  /** Current fluid engine availability. */
++  engineStatus: LiquidEngineStatus
++}
++
++interface FluidRuntimeConfig {
++  enabled?: boolean
++  flowSpeed?: number
++  pointerForce?: number
++  bloom?: number
++  palette?: LiquidPalette
++  quality?: LiquidQuality
++}
++
++interface FluidRuntime {
++  getConfig(): FluidRuntimeConfig
++  updateConfig(next: FluidRuntimeConfig): void
++  setEnabled(enabled: boolean): void
++}
++
++declare global {
++  interface Window {
++    __DSH_LIQUID_CONTROLLER__?: { dispose(): void }
++    __DSH_LIQUID_FLUID__?: FluidRuntime
++    __DSH_LIQUID_FLUID_CLEANUP__?: () => void
++    __DSH_LIQUID_OWNER__?: string
++  }
++}
++
++const SETTINGS_FIELDS = Object.keys(DEFAULT_LIQUID_SETTINGS) as Array<keyof LiquidSettings>
++
++function percent(value: unknown, min = 0, max = 100): number {
++  const parsed = typeof value === 'number' && Number.isFinite(value) ? Math.round(value) : min
++  return Math.min(max, Math.max(min, parsed))
++}
++
++function normalize<K extends keyof LiquidSettings>(field: K, value: LiquidSettings[K]): LiquidSettings[K] {
++  if (field === 'enabled') return Boolean(value) as LiquidSettings[K]
++  if (field === 'opacity' || field === 'flowSpeed' || field === 'pointerForce' || field === 'bloom') {
++    return percent(value) as LiquidSettings[K]
++  }
++  if (field === 'brightness') return percent(value, 35, 120) as LiquidSettings[K]
++  if (field === 'palette') {
++    return (value === 'abyss' || value === 'cyan' ? value : 'ocean') as LiquidSettings[K]
++  }
++  return (value === 'eco' || value === 'high' ? value : 'balanced') as LiquidSettings[K]
++}
++
++/**
++ * Own one Canvas and one WebGL context while mirroring a Host settings scope.
++ * Slider changes paint immediately, coalesce engine work to one animation
++ * frame, and persist after the gesture settles.
++ */
++export class LiquidRuntimeController {
++  /** Observable state bound into components by the slot renderer. */
++  readonly store: SnapshotStore<LiquidRuntimeState> = createSnapshotStore({
++    ...DEFAULT_LIQUID_SETTINGS,
++    syncStatus: 'loading',
++    writable: false,
++    engineStatus: 'loading',
++  })
++
++  private readonly writes = new Map<keyof LiquidSettings, ReturnType<typeof setTimeout>>()
++  private readonly unsubscribe: () => void
++  private canvas: HTMLCanvasElement | undefined
++  private script: HTMLScriptElement | undefined
++  private applyFrame: number | undefined
++  private disposed = false
++
++  /** @param host - Settings namespace mirror owned by this plugin. */
++  constructor(private readonly host: SettingsScope<LiquidSettings>) {
++    this.unsubscribe = host.subscribe(() => { this.adoptHost() })
++    this.adoptHost()
++    this.mount()
++  }
++
++  /** Preview and persist one user-owned field.
++   * @param field - field selected by the control.
++   * @param value - next validated UI value.
++   */
++  setField<K extends keyof LiquidSettings>(field: K, value: LiquidSettings[K]): void {
++    const next = normalize(field, value)
++    this.store.update((state) => { Object.assign(state, { [field]: next }) })
++    this.scheduleApply()
++    const previous = this.writes.get(field)
++    if (previous !== undefined) clearTimeout(previous)
++    const timer = setTimeout(() => {
++      this.writes.delete(field)
++      void this.host.set(field, next)
++    }, WRITE_DELAY_MS)
++    this.writes.set(field, timer)
++  }
++
++  /** Clear all user overrides and restore product defaults. */
++  reset(): void {
++    for (const timer of this.writes.values()) clearTimeout(timer)
++    this.writes.clear()
++    const current = this.store.getSnapshot()
++    this.store.set({
++      ...DEFAULT_LIQUID_SETTINGS,
++      syncStatus: current.syncStatus,
++      writable: current.writable,
++      engineStatus: current.engineStatus,
++    })
++    this.scheduleApply()
++    for (const field of SETTINGS_FIELDS) void this.host.unset(field)
++  }
++
++  /** Release listeners, timers, the owned DOM nodes, and the WebGL context. */
++  dispose(): void {
++    if (this.disposed) return
++    this.disposed = true
++    this.unsubscribe()
++    for (const timer of this.writes.values()) clearTimeout(timer)
++    this.writes.clear()
++    if (this.applyFrame !== undefined && typeof cancelAnimationFrame === 'function') {
++      cancelAnimationFrame(this.applyFrame)
++    }
++    this.applyFrame = undefined
++    if (typeof window !== 'undefined' && window.__DSH_LIQUID_CONTROLLER__ === this) {
++      window.__DSH_LIQUID_FLUID_CLEANUP__?.()
++      delete window.__DSH_LIQUID_FLUID_CLEANUP__
++      delete window.__DSH_LIQUID_CONTROLLER__
++      delete window.__DSH_LIQUID_OWNER__
++    }
++    this.script?.remove()
++    this.canvas?.remove()
++    this.script = undefined
++    this.canvas = undefined
++  }
++
++  private adoptHost(): void {
++    const snapshot = this.host.getSnapshot()
++    const current = this.store.getSnapshot()
++    if (snapshot.value === undefined) {
++      this.store.update((state) => {
++        state.syncStatus = snapshot.status === 'loading' ? 'loading' : 'unavailable'
++        state.writable = snapshot.writable
++      })
++      return
++    }
++    this.store.set({
++      ...snapshot.value,
++      syncStatus: 'ready',
++      writable: snapshot.writable,
++      engineStatus: current.engineStatus,
++    })
++    this.scheduleApply()
++  }
++
++  private mount(): void {
++    if (typeof document === 'undefined' || typeof window === 'undefined') {
++      this.store.update((state) => { state.engineStatus = 'fallback' })
++      return
++    }
++    const previous = window.__DSH_LIQUID_CONTROLLER__
++    if (previous !== undefined && previous !== this) previous.dispose()
++    window.__DSH_LIQUID_FLUID_CLEANUP__?.()
++    delete window.__DSH_LIQUID_FLUID_CLEANUP__
++    document.getElementById(CANVAS_ID)?.remove()
++    document.getElementById(SCRIPT_ID)?.remove()
++    document.querySelector('style[data-plugin="dsh-liquid-wallpaper-skin"]')?.remove()
++
++    window.__DSH_LIQUID_CONTROLLER__ = this
++    window.__DSH_LIQUID_OWNER__ = PLUGIN_ID
++
++    const canvas = document.createElement('canvas')
++    canvas.id = CANVAS_ID
++    canvas.setAttribute('aria-hidden', 'true')
++    canvas.setAttribute('role', 'presentation')
++    document.body.prepend(canvas)
++    this.canvas = canvas
++    this.applyVisuals()
++
++    const script = document.createElement('script')
++    script.id = SCRIPT_ID
++    script.src = ENGINE_URL
++    script.async = true
++    script.addEventListener('load', () => { this.attachEngine() }, { once: true })
++    script.addEventListener('error', () => {
++      canvas.dataset.fallback = 'static'
++      this.store.update((state) => { state.engineStatus = 'fallback' })
++    }, { once: true })
++    document.head.appendChild(script)
++    this.script = script
++  }
++
++  private attachEngine(): void {
++    if (this.disposed) return
++    if (window.__DSH_LIQUID_FLUID__ === undefined) {
++      this.store.update((state) => { state.engineStatus = 'fallback' })
++      return
++    }
++    this.store.update((state) => { state.engineStatus = 'ready' })
++    this.applyNow()
++  }
++
++  private scheduleApply(): void {
++    if (this.disposed || this.applyFrame !== undefined) return
++    if (typeof requestAnimationFrame !== 'function') {
++      this.applyNow()
++      return
++    }
++    this.applyFrame = requestAnimationFrame(() => {
++      this.applyFrame = undefined
++      this.applyNow()
++    })
++  }
++
++  private applyNow(): void {
++    this.applyVisuals()
++    const state = this.store.getSnapshot()
++    window.__DSH_LIQUID_FLUID__?.updateConfig({
++      enabled: state.enabled,
++      flowSpeed: state.flowSpeed / 100,
++      pointerForce: state.pointerForce / 100,
++      bloom: state.bloom / 100,
++      palette: state.palette,
++      quality: state.quality,
++    })
++  }
++
++  private applyVisuals(): void {
++    const canvas = this.canvas
++    if (canvas === undefined) return
++    const state = this.store.getSnapshot()
++    canvas.style.setProperty('--dsh-liquid-user-opacity', state.enabled ? String(state.opacity / 100) : '0')
++    canvas.style.filter = `brightness(${String(state.brightness)}%) saturate(108%)`
++  }
++}
+diff --git a/packages/client/ui-liquid-glass/src/client/types.ts b/packages/client/ui-liquid-glass/src/client/types.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f42545829437c3822ab5e48be7caefebcf87565
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/client/types.ts
+@@ -0,0 +1,15 @@
++/** Shared injected face for both Liquid control surfaces. */
++
++import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
++import type { LiquidSettings } from '../liquid-settings.ts'
++import type { LiquidRuntimeState } from './runtime-controller.ts'
++
++/** Controller callbacks plus the renderer-bound shared snapshot source. */
++export interface LiquidControlInjected {
++  /** Reactive state source converted into `useLiquid` by the slot renderer. */
++  hooks: { liquid: SnapshotStore<LiquidRuntimeState> }
++  /** Preview and persist one setting. */
++  setLiquidField: <K extends keyof LiquidSettings>(field: K, value: LiquidSettings[K]) => void
++  /** Clear all user overrides. */
++  resetLiquid: () => void
++}
+diff --git a/packages/client/ui-liquid-glass/src/css-modules.d.ts b/packages/client/ui-liquid-glass/src/css-modules.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..8811db126498ec8fac4acff5c3f137ffb839fec5
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/css-modules.d.ts
+@@ -0,0 +1,4 @@
++declare module '*.module.css' {
++  const classes: Record<string, string>
++  export default classes
++}
+diff --git a/packages/client/ui-liquid-glass/src/index.ts b/packages/client/ui-liquid-glass/src/index.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..d252ea702dc7d90ba60b230a8cd21ccb6c1adb76
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/index.ts
+@@ -0,0 +1,22 @@
++/** Host registration for the user-owned Deep Ocean Liquid Glass preferences. */
++
++import type { Context } from '@deepseek-ai/cordis'
++import { settingsNamespace } from '@deepseek-ai/dsh-settings'
++import {
++  LIQUID_SETTINGS_NAMESPACE, LiquidSettingsSchema,
++} from './liquid-settings.ts'
++
++export {
++  DEFAULT_LIQUID_SETTINGS, LIQUID_PALETTES, LIQUID_QUALITIES, LIQUID_SETTINGS_NAMESPACE,
++  type LiquidPalette, type LiquidQuality, type LiquidSettings,
++} from './liquid-settings.ts'
++
++/** Host service required for durable Liquid Glass preferences. */
++export const inject = ['settings']
++
++/** Register the durable Liquid Glass namespace.
++ * @param ctx - Host Cordis context.
++ */
++export function apply(ctx: Context): void {
++  ctx.settings.register(settingsNamespace(LIQUID_SETTINGS_NAMESPACE), LiquidSettingsSchema)
++}
+diff --git a/packages/client/ui-liquid-glass/src/invariant.ts b/packages/client/ui-liquid-glass/src/invariant.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b8506955e67c4a358e6ca27910fa101e6dc38f8
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/invariant.ts
+@@ -0,0 +1,21 @@
++/** Package-owned invariant companion for the Liquid Glass UI. */
++
++import type { Context } from '@deepseek-ai/cordis'
++import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
++
++const PACKAGE_NAME = '@deepseek-ai/dsh-client-ui-liquid-glass'
++
++/** Cordis companion plugin name. */
++export const name = 'client-ui-liquid-glass-invariant'
++/** Service required before reserving package ownership. */
++export const inject = ['invariants']
++
++/** No runtime invariant: the plugin owns only browser presentation state and its disposable WebGL resource. */
++const install: InvariantInstaller = () => {}
++
++/** Register this package's invariant companion.
++ * @param ctx - Cordis context carrying the invariant service.
++ * @returns the invariant registration disposer.
++ */
++export const apply = (ctx: Context): Promise<() => void> =>
++  Promise.resolve(ctx.invariants.register(PACKAGE_NAME, install))
+diff --git a/packages/client/ui-liquid-glass/src/liquid-settings.ts b/packages/client/ui-liquid-glass/src/liquid-settings.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..716cb9d704223f6d3a8067bd8e83f0ed29e0b39e
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/src/liquid-settings.ts
+@@ -0,0 +1,62 @@
++/** Durable Deep Ocean fluid preferences shared by the Host and browser halves. */
++
++import z from '@deepseek-ai/schemastery'
++
++/** Settings namespace owned by the Liquid Glass plugin. */
++export const LIQUID_SETTINGS_NAMESPACE = 'ui-liquid-glass'
++
++/** Available cyan-to-blue palette treatments. */
++export const LIQUID_PALETTES = ['abyss', 'ocean', 'cyan'] as const
++
++/** GPU workload presets. */
++export const LIQUID_QUALITIES = ['eco', 'balanced', 'high'] as const
++
++/** Palette selection stored in the Host settings document. */
++export type LiquidPalette = typeof LIQUID_PALETTES[number]
++
++/** Quality selection stored in the Host settings document. */
++export type LiquidQuality = typeof LIQUID_QUALITIES[number]
++
++/** User-owned fluid presentation and simulation preferences. */
++export interface LiquidSettings {
++  /** Whether the animated surface is active. */
++  enabled: boolean
++  /** Canvas compositing opacity, in percent. */
++  opacity: number
++  /** Immediate display brightness, in percent. */
++  brightness: number
++  /** Ambient motion amount, in percent. */
++  flowSpeed: number
++  /** Pointer-driven splat force, in percent. */
++  pointerForce: number
++  /** Bloom intensity, in percent. */
++  bloom: number
++  /** Cyan-to-blue color treatment. */
++  palette: LiquidPalette
++  /** Simulation workload preset. */
++  quality: LiquidQuality
++}
++
++/** Product defaults tuned for a calm, readable Deep Ocean surface. */
++export const DEFAULT_LIQUID_SETTINGS: LiquidSettings = Object.freeze({
++  enabled: true,
++  opacity: 48,
++  brightness: 78,
++  flowSpeed: 60,
++  pointerForce: 55,
++  bloom: 30,
++  palette: 'ocean',
++  quality: 'balanced',
++})
++
++/** Durable schema and browser wire envelope for the Liquid settings namespace. */
++export const LiquidSettingsSchema: z<LiquidSettings> = z.object({
++  enabled: z.boolean().default(DEFAULT_LIQUID_SETTINGS.enabled),
++  opacity: z.number().step(1).min(0).max(100).default(DEFAULT_LIQUID_SETTINGS.opacity),
++  brightness: z.number().step(1).min(35).max(120).default(DEFAULT_LIQUID_SETTINGS.brightness),
++  flowSpeed: z.number().step(1).min(0).max(100).default(DEFAULT_LIQUID_SETTINGS.flowSpeed),
++  pointerForce: z.number().step(1).min(0).max(100).default(DEFAULT_LIQUID_SETTINGS.pointerForce),
++  bloom: z.number().step(1).min(0).max(100).default(DEFAULT_LIQUID_SETTINGS.bloom),
++  palette: z.union([...LIQUID_PALETTES]).default(DEFAULT_LIQUID_SETTINGS.palette),
++  quality: z.union([...LIQUID_QUALITIES]).default(DEFAULT_LIQUID_SETTINGS.quality),
++})
+diff --git a/packages/client/ui-liquid-glass/tests/components.client.spec.tsx b/packages/client/ui-liquid-glass/tests/components.client.spec.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..3fcaa07c74b4d585dc18acf51131ee3c05537d77
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/tests/components.client.spec.tsx
+@@ -0,0 +1,40 @@
++// @vitest-environment jsdom
++import { fireEvent, render, screen } from '@testing-library/react'
++import { describe, expect, it, vi } from 'vitest'
++import { DEFAULT_LIQUID_SETTINGS } from '../src/liquid-settings.ts'
++import { LiquidSettingsRow } from '../src/client/LiquidSettingsRow.tsx'
++import { en, type LiquidKey } from '../src/client/locales.ts'
++import type { LiquidRuntimeState } from '../src/client/runtime-controller.ts'
++
++describe('LiquidSettingsRow', () => {
++  it('renders every control group and routes slider, palette, quality, toggle, and reset gestures', () => {
++    const state: LiquidRuntimeState = {
++      ...DEFAULT_LIQUID_SETTINGS,
++      syncStatus: 'ready',
++      writable: true,
++      engineStatus: 'ready',
++    }
++    const setLiquidField = vi.fn()
++    const resetLiquid = vi.fn()
++    render(<LiquidSettingsRow
++      useSessions={vi.fn() as never}
++      useWorkspaces={vi.fn() as never}
++      t={(key: string) => en[key as LiquidKey] ?? key}
++      useLiquid={selector => selector(state)}
++      setLiquidField={setLiquidField}
++      resetLiquid={resetLiquid}
++    />)
++
++    expect(screen.getByRole('heading', { name: 'Deep Ocean fluid background' })).toBeTruthy()
++    fireEvent.change(screen.getByRole('slider', { name: 'Fluid brightness' }), { target: { value: '52' } })
++    expect(setLiquidField).toHaveBeenCalledWith('brightness', 52)
++    fireEvent.click(screen.getByRole('button', { name: /Abyss/ }))
++    expect(setLiquidField).toHaveBeenCalledWith('palette', 'abyss')
++    fireEvent.click(screen.getByRole('button', { name: /High/ }))
++    expect(setLiquidField).toHaveBeenCalledWith('quality', 'high')
++    fireEvent.click(screen.getByRole('checkbox'))
++    expect(setLiquidField).toHaveBeenCalledWith('enabled', false)
++    fireEvent.click(screen.getByRole('button', { name: 'Restore defaults' }))
++    expect(resetLiquid).toHaveBeenCalledOnce()
++  })
++})
+diff --git a/packages/client/ui-liquid-glass/tests/host.client.spec.ts b/packages/client/ui-liquid-glass/tests/host.client.spec.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..ae8180075eec24cd6359e05bb166d450a2ee54cc
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/tests/host.client.spec.ts
+@@ -0,0 +1,31 @@
++import { Context } from '@deepseek-ai/cordis'
++import { describe, expect, it } from 'vitest'
++import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
++import {
++  DEFAULT_LIQUID_SETTINGS, LIQUID_SETTINGS_NAMESPACE, apply, inject,
++} from '@deepseek-ai/dsh-client-ui-liquid-glass'
++
++class MemorySettings extends SettingsProvider {
++  readonly writable = true
++  protected load(): Promise<Record<string, unknown>> { return Promise.resolve({}) }
++  protected persist(_ns: SettingsNamespace, _section: Record<string, unknown>): Promise<void> {
++    return Promise.resolve()
++  }
++}
++
++describe('ui-liquid-glass Host settings', () => {
++  it('registers bounded defaults and disposes its namespace with the plugin fiber', async () => {
++    const ctx = new Context()
++    await ctx.plugin(MemorySettings).await()
++    const fiber = ctx.plugin({ inject, apply })
++    await fiber.await()
++    const ns = settingsNamespace(LIQUID_SETTINGS_NAMESPACE)
++    expect(ctx.settings.get(ns)).toEqual(DEFAULT_LIQUID_SETTINGS)
++    await ctx.settings.update(ns, { brightness: 52, palette: 'abyss', quality: 'eco' })
++    expect(ctx.settings.get(ns)).toMatchObject({ brightness: 52, palette: 'abyss', quality: 'eco' })
++    await expect(ctx.settings.update(ns, { brightness: 121 })).rejects.toThrow()
++    await expect(ctx.settings.update(ns, { palette: 'rainbow' })).rejects.toThrow()
++    await fiber.dispose()
++    expect(ctx.settings.describe().map(row => row.ns)).not.toContain(ns)
++  })
++})
+diff --git a/packages/client/ui-liquid-glass/tests/runtime-controller.client.spec.ts b/packages/client/ui-liquid-glass/tests/runtime-controller.client.spec.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..4901b671a9f61df9dadce3b3a2e351223ca3aead
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/tests/runtime-controller.client.spec.ts
+@@ -0,0 +1,72 @@
++// @vitest-environment jsdom
++import { afterEach, describe, expect, it, vi } from 'vitest'
++import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
++import { DEFAULT_LIQUID_SETTINGS, type LiquidSettings } from '../src/liquid-settings.ts'
++import { LiquidRuntimeController } from '../src/client/runtime-controller.ts'
++
++afterEach(() => {
++  document.body.innerHTML = ''
++  document.head.querySelector('#dsh-liquid-fluid-engine')?.remove()
++  delete window.__DSH_LIQUID_CONTROLLER__
++  delete window.__DSH_LIQUID_FLUID__
++  delete window.__DSH_LIQUID_FLUID_CLEANUP__
++  delete window.__DSH_LIQUID_OWNER__
++  vi.useRealTimers()
++  vi.unstubAllGlobals()
++})
++
++describe('LiquidRuntimeController', () => {
++  it('shares Host values, coalesces writes, applies the engine, resets, and fully disposes', async () => {
++    vi.useFakeTimers()
++    vi.stubGlobal('requestAnimationFrame', undefined)
++    const host = stubSettingsScope<LiquidSettings>()
++    const controller = new LiquidRuntimeController(host.scope)
++    expect(document.querySelectorAll('#dsh-liquid-background')).toHaveLength(1)
++    expect(document.querySelectorAll('#dsh-liquid-fluid-engine')).toHaveLength(1)
++    expect(host.listenerCount()).toBe(1)
++
++    host.publish({ status: 'ready', value: { ...DEFAULT_LIQUID_SETTINGS }, writable: true })
++    expect(controller.store.getSnapshot()).toMatchObject({ syncStatus: 'ready', writable: true })
++
++    const updateConfig = vi.fn()
++    const cleanup = vi.fn()
++    window.__DSH_LIQUID_FLUID__ = { getConfig: () => ({}), updateConfig, setEnabled: vi.fn() }
++    window.__DSH_LIQUID_FLUID_CLEANUP__ = cleanup
++    document.querySelector<HTMLScriptElement>('#dsh-liquid-fluid-engine')!
++      .dispatchEvent(new Event('load'))
++    expect(updateConfig).toHaveBeenLastCalledWith(expect.objectContaining({ quality: 'balanced' }))
++
++    controller.setField('brightness', 55)
++    controller.setField('brightness', 54)
++    controller.setField('flowSpeed', 25)
++    expect(controller.store.getSnapshot()).toMatchObject({ brightness: 54, flowSpeed: 25 })
++    expect(document.querySelector<HTMLCanvasElement>('#dsh-liquid-background')!.style.filter)
++      .toContain('brightness(54%)')
++    await vi.advanceTimersByTimeAsync(179)
++    expect(host.set).not.toHaveBeenCalled()
++    await vi.advanceTimersByTimeAsync(1)
++    expect(host.set).toHaveBeenCalledTimes(2)
++    expect(host.set).toHaveBeenCalledWith('brightness', 54)
++
++    controller.reset()
++    expect(controller.store.getSnapshot()).toMatchObject(DEFAULT_LIQUID_SETTINGS)
++    expect(host.unset).toHaveBeenCalledTimes(Object.keys(DEFAULT_LIQUID_SETTINGS).length)
++
++    controller.dispose()
++    controller.dispose()
++    expect(cleanup).toHaveBeenCalledOnce()
++    expect(host.listenerCount()).toBe(0)
++    expect(document.querySelector('#dsh-liquid-background')).toBeNull()
++    expect(document.querySelector('#dsh-liquid-fluid-engine')).toBeNull()
++  })
++
++  it('keeps the static fallback usable when the engine asset fails', () => {
++    const host = stubSettingsScope<LiquidSettings>()
++    const controller = new LiquidRuntimeController(host.scope)
++    const script = document.querySelector<HTMLScriptElement>('#dsh-liquid-fluid-engine')!
++    script.dispatchEvent(new Event('error'))
++    expect(controller.store.getSnapshot().engineStatus).toBe('fallback')
++    expect(document.querySelector<HTMLCanvasElement>('#dsh-liquid-background')!.dataset.fallback).toBe('static')
++    controller.dispose()
++  })
++})
+diff --git a/packages/client/ui-liquid-glass/tsconfig.json b/packages/client/ui-liquid-glass/tsconfig.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..9d359236d70f298cd08f72058ba8c830ea91b074
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/tsconfig.json
+@@ -0,0 +1,19 @@
++{
++  "extends": "../../../tsconfig.base.client.json",
++  "compilerOptions": {
++    "rootDir": "src",
++    "outDir": "lib/types"
++  },
++  "include": ["src"],
++  "references": [
++    { "path": "../locale" },
++    { "path": "../runtime" },
++    { "path": "../ui-primitives" },
++    { "path": "../ui-settings" },
++    { "path": "../ui-sidebar" },
++    { "path": "../ui-slots" },
++    { "path": "../../settings/settings" },
++    { "path": "../../runtime-diagnostics/invariants" },
++    { "path": "../../../vendor/cordis" }
++  ]
++}
+diff --git a/packages/client/ui-liquid-glass/tsdown.config.ts b/packages/client/ui-liquid-glass/tsdown.config.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7be8096fb9032cb1b5a08e12018b134ae9ad4d8
+--- /dev/null
++++ b/packages/client/ui-liquid-glass/tsdown.config.ts
+@@ -0,0 +1,6 @@
++import { clientBundle } from '../tsdown.client.ts'
++
++export default clientBundle(
++  '@deepseek-ai/dsh-client-ui-liquid-glass',
++  ['lib/types/index.js', 'lib/types/invariant.js'],
++)
+diff --git a/packages/client/ui-model-selection/src/client/ModelSelect.module.css b/packages/client/ui-model-selection/src/client/ModelSelect.module.css
+index b19242fb448b619f1cb34bdc195c1f69d39a1d0b..5d02352bc747df0c7b77f4a3fd9a7569caf27832 100644
+--- a/packages/client/ui-model-selection/src/client/ModelSelect.module.css
++++ b/packages/client/ui-model-selection/src/client/ModelSelect.module.css
+@@ -18,7 +18,11 @@
+   /* Rounded chip chrome, matching the sibling permission trigger. */
+   border-radius: 24px;
+   outline: none;
+-  background: transparent;
++  background: var(--dsh-glass-bg);
++  border: 1px solid var(--dsh-glass-border);
++  box-shadow: var(--dsh-glass-inner-highlight);
++  backdrop-filter: var(--dsh-glass-blur);
++  -webkit-backdrop-filter: var(--dsh-glass-blur);
+   color: var(--dsw-alias-label-secondary);
+   font-size: 13px;
+   line-height: 20px;
+@@ -78,7 +82,9 @@
+   border: 1px solid var(--dsw-alias-border-inverted);
+   border-radius: 12px;
+   background: var(--dsw-specific-menu);
+-  box-shadow: var(--dsw-shadow-lv3);
++  backdrop-filter: var(--dsh-glass-blur-strong);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-strong);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+   color: var(--dsw-alias-label-primary);
+   /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens.
+      Declared here rather than on the scrolling `.groups` child so the
+diff --git a/packages/client/ui-primitives/src/HoverCard.module.css b/packages/client/ui-primitives/src/HoverCard.module.css
+index 8d425ca85c3af19fb9ed02b9d8eb735da68f9e1e..40325b1e0e57b7dc5b56d309681ba9b45b2708e3 100644
+--- a/packages/client/ui-primitives/src/HoverCard.module.css
++++ b/packages/client/ui-primitives/src/HoverCard.module.css
+@@ -18,8 +18,11 @@
+   width: 244px;
+   padding: 12px 16px;
+   border-radius: 12px;
+-  background: var(--dsw-hovercard-bg);
+-  box-shadow: var(--dsw-shadow-lv3);
++  background: var(--dsh-glass-bg-strong);
++  border: 1px solid var(--dsh-glass-border);
++  backdrop-filter: var(--dsh-glass-blur-strong);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-strong);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+ }
+ 
+ .copyable {
+diff --git a/packages/client/ui-primitives/src/Menu.module.css b/packages/client/ui-primitives/src/Menu.module.css
+index 7bc0c5aced52781e296cb31fe34f5499777c8616..e9e406e3533532e3db4aa47ffda669d1d02d93b6 100644
+--- a/packages/client/ui-primitives/src/Menu.module.css
++++ b/packages/client/ui-primitives/src/Menu.module.css
+@@ -16,7 +16,9 @@
+   border: 1px solid var(--dsw-alias-border-inverted);
+   border-radius: 12px;
+   background: var(--dsw-specific-menu);
+-  box-shadow: var(--dsw-shadow-lv3);
++  backdrop-filter: var(--dsh-glass-blur-strong);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-strong);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+   /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens. The
+      declaration sits on the card rather than on `.scrollable .viewport`
+      because the elevation is a property of this surface, and the custom
+diff --git a/packages/client/ui-primitives/src/Modal.module.css b/packages/client/ui-primitives/src/Modal.module.css
+index 0c6d68e5fa043ddb2203b2cc3513d36745788ac9..eb236c8871fd4cc73fd15e42c00d15365c7efa2f 100644
+--- a/packages/client/ui-primitives/src/Modal.module.css
++++ b/packages/client/ui-primitives/src/Modal.module.css
+@@ -31,7 +31,19 @@
+   border: 1px solid var(--dsw-alias-border-inverted);
+   border-radius: 24px;
+   background: var(--dsw-alias-bg-layer-2);
+-  box-shadow: var(--dsw-shadow-lv3);
++  backdrop-filter: var(--dsh-glass-blur-strong);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-strong);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
++}
++
++.dialog::before {
++  position: absolute;
++  inset: 1px;
++  border-radius: inherit;
++  border-top: 1px solid rgba(193, 241, 255, 0.16);
++  background: linear-gradient(120deg, rgba(193, 241, 255, 0.08), transparent 32%, transparent 68%, rgba(27, 151, 210, 0.06));
++  content: '';
++  pointer-events: none;
+ }
+ 
+ .content {
+diff --git a/packages/client/ui-primitives/src/TerminalBlock.module.css b/packages/client/ui-primitives/src/TerminalBlock.module.css
+index 0d3ff07d3bba0b82214d4b310aaf67d6a2309b34..edf231dcc57408618ac3a1bc8b8f7d73ef3f47fb 100644
+--- a/packages/client/ui-primitives/src/TerminalBlock.module.css
++++ b/packages/client/ui-primitives/src/TerminalBlock.module.css
+@@ -25,6 +25,8 @@
+   padding-left: var(--dsl-terminal-gutter);
+   color: var(--dsw-alias-label-primary);
+   background: var(--dsw-alias-markdown-code-block);
++  border: 1px solid var(--dsh-glass-border);
++  box-shadow: var(--dsh-glass-inner-highlight);
+   border-radius: var(--dsl-terminal-radius);
+   /* Clip the banner to the card's own radius: when a consumer adds a border,
+      the banner's equal corner radius no longer nests inside it and leaves a
+diff --git a/packages/client/ui-primitives/src/Toast.module.css b/packages/client/ui-primitives/src/Toast.module.css
+index 458cce92217f60bda0b75aee69950ab4deabf991..7aa574a3ae7396948e369c1ffe1cd3351a43b4d6 100644
+--- a/packages/client/ui-primitives/src/Toast.module.css
++++ b/packages/client/ui-primitives/src/Toast.module.css
+@@ -21,11 +21,14 @@
+   max-width: min(560px, calc(100vw - 48px));
+   padding: 12px 16px;
+   border-radius: 14px;
+-  background: var(--dsw-alias-button-contrast-fill);
+-  color: var(--dsw-alias-label-primary-inverted);
++  background: var(--dsw-alias-toast-bg);
++  border: 1px solid var(--dsh-glass-border);
++  backdrop-filter: var(--dsh-glass-blur-strong);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-strong);
++  color: var(--dsw-alias-label-primary);
+   font-size: 14px;
+   line-height: 22px;
+-  box-shadow: var(--dsw-shadow-lv3);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+   transform: translateX(-50%);
+   animation:
+     dsh-toast-in 160ms ease-out,
+diff --git a/packages/client/ui-primitives/src/markdown/CodeBlock.module.css b/packages/client/ui-primitives/src/markdown/CodeBlock.module.css
+index 4f78a4993583b6a7b8b5c1af62562f2f55e9374c..5726f6b7492d1a8357dcb43895895a1457460ff8 100644
+--- a/packages/client/ui-primitives/src/markdown/CodeBlock.module.css
++++ b/packages/client/ui-primitives/src/markdown/CodeBlock.module.css
+@@ -11,7 +11,9 @@
+   margin: 16px 0;
+   color: var(--dsw-alias-label-primary);
+   background: var(--dsw-alias-markdown-code-block);
++  border: 1px solid var(--dsh-glass-border);
+   border-radius: var(--dsl-code-block-border-radius);
++  box-shadow: var(--dsh-glass-inner-highlight);
+ }
+ 
+ .block:not(:last-child) {
+diff --git a/packages/client/ui-settings-general/src/client/SettingsRoot.module.css b/packages/client/ui-settings-general/src/client/SettingsRoot.module.css
+index 060e8d115b36fcf2265ccf5defe69c6151003662..ed548772e6ebf8cc47e831f344c640c0b49e82f3 100644
+--- a/packages/client/ui-settings-general/src/client/SettingsRoot.module.css
++++ b/packages/client/ui-settings-general/src/client/SettingsRoot.module.css
+@@ -80,7 +80,10 @@
+   border-radius: 24px;
+   overflow: hidden;
+   background: var(--dsw-alias-bg-layer-2);
+-  box-shadow: var(--dsw-shadow-lv3);
++  border: 1px solid var(--dsh-glass-border);
++  backdrop-filter: var(--dsh-glass-blur-strong);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-strong);
++  box-shadow: var(--dsh-glass-shadow), var(--dsh-glass-inner-highlight);
+   /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens.
+      Declared on the panel rather than the scrolling `.options` child so the
+      elevation choice sits with the surface; the custom properties inherit
+diff --git a/packages/client/ui-settings-plugins/src/client/PluginCard.module.css b/packages/client/ui-settings-plugins/src/client/PluginCard.module.css
+index 091273cd5bfb878409a82b66514ae53a1d6405bf..833a72f96de3a2b4d4facde294daee1922bf6041 100644
+--- a/packages/client/ui-settings-plugins/src/client/PluginCard.module.css
++++ b/packages/client/ui-settings-plugins/src/client/PluginCard.module.css
+@@ -5,6 +5,9 @@
+   border: 1px solid var(--dsw-alias-border-l2);
+   border-radius: 12px;
+   background: var(--dsw-alias-bg-layer-3);
++  box-shadow: var(--dsh-glass-inner-highlight);
++  backdrop-filter: var(--dsh-glass-blur-soft);
++  -webkit-backdrop-filter: var(--dsh-glass-blur-soft);
+   transition: border-color .16s, background .16s;
+ }
+ 
+diff --git a/packages/client/ui-sidebar/src/client/SidebarRoot.module.css b/packages/client/ui-sidebar/src/client/SidebarRoot.module.css
+index 300075b88d9d5eec407d362f8eaa097b319eae9d..78c37482f3a8dda2775f00f628ab4a14dbf925e6 100644
+--- a/packages/client/ui-sidebar/src/client/SidebarRoot.module.css
++++ b/packages/client/ui-sidebar/src/client/SidebarRoot.module.css
+@@ -8,12 +8,15 @@
+ 
+ .root {
+   --dsh-sidebar-inline-padding: 12px;
++  position: relative;
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   padding: 6px var(--dsh-sidebar-inline-padding);
+   box-sizing: border-box;
+-  background: var(--dsw-specific-sidebar-fill);
++  background: transparent;
++  border-right: 1px solid var(--dsh-glass-border);
++  box-shadow: inset -1px 0 0 var(--dsh-glass-highlight);
+   color: var(--dsw-alias-label-primary);
+   font-size: 14px;
+   /* The sidebar is elevated above the conversation surface, so a revealed
+@@ -22,6 +25,17 @@
+   --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
+ }
+ 
++.root::before {
++  position: absolute;
++  inset: 0;
++  border-radius: inherit;
++  background: var(--dsw-specific-sidebar-fill);
++  backdrop-filter: var(--dsh-glass-blur);
++  -webkit-backdrop-filter: var(--dsh-glass-blur);
++  content: '';
++  pointer-events: none;
++}
++
+ /* Rail geometry (figma rail spec): 36x36 control boxes centered in the 56px
+    rail (10px side padding), 12px vertical rhythm, 18px from the rail top to
+    the whale's box (24px to the 24-wide whale glyph itself). */
+diff --git a/packages/client/ui-theme/src/styles/base.css b/packages/client/ui-theme/src/styles/base.css
+index 4c801b8d4dddd3c7a1e619ad8ee0d58eb3a55b11..60b274cea013e9f924ef3dfb5b9f1f7917b71970 100644
+--- a/packages/client/ui-theme/src/styles/base.css
++++ b/packages/client/ui-theme/src/styles/base.css
+@@ -13,3 +13,14 @@
+   --ds-transition-duration-fast: 0.1s;
+   --ds-transition-duration-slow: 0.3s;
+ }
++
++@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
++  body[data-ds-dark-theme] {
++    --dsh-glass-bg-soft: rgba(6, 20, 36, 0.82);
++    --dsh-glass-bg: rgba(6, 22, 39, 0.9);
++    --dsh-glass-bg-strong: rgba(7, 25, 44, 0.96);
++    --dsw-specific-input-major: rgba(5, 19, 34, 0.96);
++    --dsw-specific-menu: rgba(6, 22, 39, 0.97);
++    --dsw-specific-sidebar-fill: rgba(4, 15, 28, 0.94);
++  }
++}
+diff --git a/packages/client/ui-theme/src/styles/design-platform.css b/packages/client/ui-theme/src/styles/design-platform.css
+index 5dd0948769e76d1dec6dcf4a67b1b52fd872bad0..bb19284faa1bb680ed286ede83bd7273bcc8aa15 100644
+--- a/packages/client/ui-theme/src/styles/design-platform.css
++++ b/packages/client/ui-theme/src/styles/design-platform.css
+@@ -153,7 +153,98 @@ body[data-ds-dark-theme] {
+   --dsw-static-red-900: rgb(87, 12, 12);
+ }
+ 
++/* Deep Ocean fluid world and the semantic control colors consumed by the
++   ui-liquid-glass plugin. The Canvas remains behind #root; inline plugin
++   state only supplies the user opacity and brightness. */
+ body {
++  --dsh-liquid-accent: rgb(31, 181, 214);
++  --dsh-liquid-accent-border: rgba(31, 181, 214, 0.48);
++  --dsh-liquid-accent-glow: rgba(13, 145, 190, 0.24);
++  --dsh-liquid-range-track: rgba(38, 49, 72, 0.14);
++  --dsh-liquid-thumb: rgb(248, 252, 255);
++  --dsh-liquid-thumb-border: rgba(18, 87, 112, 0.28);
++  --dsh-liquid-choice-active: rgba(31, 181, 214, 0.1);
++  --dsh-liquid-panel-reflection: linear-gradient(145deg, rgba(255, 255, 255, 0.13), transparent 34%);
++  --dsh-liquid-swatch-abyss: linear-gradient(145deg, rgb(3, 11, 25), rgb(15, 55, 91));
++  --dsh-liquid-swatch-ocean: linear-gradient(145deg, rgb(5, 22, 43), rgb(12, 113, 154));
++  --dsh-liquid-swatch-cyan: linear-gradient(145deg, rgb(4, 45, 73), rgb(31, 196, 218));
++}
++
++body[data-ds-dark-theme] {
++  --dsh-liquid-accent: rgb(79, 207, 229);
++  --dsh-liquid-accent-border: rgba(111, 222, 240, 0.42);
++  --dsh-liquid-accent-glow: rgba(30, 184, 224, 0.28);
++  --dsh-liquid-range-track: rgba(151, 218, 238, 0.16);
++  --dsh-liquid-thumb: rgb(222, 247, 252);
++  --dsh-liquid-thumb-border: rgba(185, 239, 255, 0.52);
++  --dsh-liquid-choice-active: rgba(39, 166, 203, 0.14);
++  --dsh-liquid-panel-reflection: linear-gradient(145deg, rgba(189, 240, 255, 0.11), transparent 36%);
++}
++
++html,
++body {
++  min-height: 100%;
++}
++
++body {
++  background:
++    radial-gradient(ellipse at 20% 15%, rgba(50, 175, 205, 0.15), transparent 42%),
++    linear-gradient(145deg, rgb(233, 242, 247), rgb(220, 234, 241) 62%, rgb(237, 245, 248));
++}
++
++body[data-ds-dark-theme] {
++  background:
++    radial-gradient(ellipse at 18% 12%, rgba(8, 70, 105, 0.24), transparent 44%),
++    radial-gradient(ellipse at 84% 78%, rgba(4, 45, 98, 0.28), transparent 46%),
++    linear-gradient(145deg, rgb(3, 7, 18) 0%, rgb(6, 16, 31) 48%, rgb(7, 20, 38) 100%);
++}
++
++#dsh-liquid-background {
++  position: fixed;
++  z-index: 0;
++  inset: 0;
++  display: block;
++  width: 100vw;
++  height: 100vh;
++  contain: strict;
++  opacity: calc(var(--dsh-liquid-user-opacity, 0.48) * 0.45);
++  pointer-events: none;
++  transition: opacity 180ms var(--ds-ease-in-out), filter 180ms var(--ds-ease-in-out);
++}
++
++body[data-ds-dark-theme] #dsh-liquid-background {
++  opacity: var(--dsh-liquid-user-opacity, 0.48);
++}
++
++#root {
++  position: relative;
++  z-index: 1;
++  min-height: 100vh;
++  background: transparent;
++}
++
++@media (prefers-reduced-motion: reduce) {
++  #dsh-liquid-background {
++    transition: none;
++  }
++}
++
++body {
++  /* Liquid Glass material scale shared by the browser surfaces. */
++  --dsh-glass-bg-soft: rgba(255, 255, 255, 0.035);
++  --dsh-glass-bg: rgba(255, 255, 255, 0.07);
++  --dsh-glass-bg-strong: rgba(255, 255, 255, 0.12);
++  --dsh-glass-border: rgba(255, 255, 255, 0.14);
++  --dsh-glass-highlight: rgba(255, 255, 255, 0.22);
++  --dsh-glass-blur-soft: blur(10px) saturate(120%);
++  --dsh-glass-blur: blur(18px) saturate(135%);
++  --dsh-glass-blur-strong: blur(28px) saturate(155%);
++  --dsh-glass-radius-sm: 10px;
++  --dsh-glass-radius-md: 14px;
++  --dsh-glass-radius-lg: 22px;
++  --dsh-glass-radius-pill: 999px;
++  --dsh-glass-shadow: 0 18px 48px rgba(0, 6, 18, 0.3), 0 2px 10px rgba(0, 0, 0, 0.18);
++  --dsh-glass-inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+   --dsw-alias-bg-base: var(--dsw-static-neutral-bluish-00);
+   --dsw-alias-bg-layer-1: var(--dsw-static-neutral-bluish-00);
+   --dsw-alias-bg-layer-2: var(--dsw-static-neutral-bluish-00);
+@@ -246,10 +337,17 @@ body {
+ }
+ 
+ body[data-ds-dark-theme] {
++  --dsh-glass-bg-soft: rgba(7, 24, 43, 0.38);
++  --dsh-glass-bg: rgba(7, 25, 45, 0.58);
++  --dsh-glass-bg-strong: rgba(8, 30, 52, 0.78);
++  --dsh-glass-border: rgba(156, 224, 255, 0.16);
++  --dsh-glass-highlight: rgba(185, 239, 255, 0.24);
++  --dsh-glass-shadow: 0 22px 58px rgba(0, 3, 12, 0.5), 0 2px 12px rgba(0, 0, 0, 0.26);
++  --dsh-glass-inner-highlight: inset 0 1px 0 rgba(188, 239, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+   --dsw-alias-bg-base: var(--dsw-static-neutral-bluish-950);
+-  --dsw-alias-bg-layer-1: var(--dsw-static-neutral-bluish-875);
+-  --dsw-alias-bg-layer-2: var(--dsw-static-neutral-bluish-850);
+-  --dsw-alias-bg-layer-3: var(--dsw-static-neutral-bluish-800);
++  --dsw-alias-bg-layer-1: rgba(5, 16, 29, 0.52);
++  --dsw-alias-bg-layer-2: rgba(7, 22, 39, 0.68);
++  --dsw-alias-bg-layer-3: rgba(9, 28, 48, 0.8);
+   --dsw-alias-bg-mask-1: rgba(0, 0, 0, 0.5);
+   --dsw-alias-bg-mask-2: rgba(0, 0, 0, 0.2);
+   --dsw-alias-bg-mask-3: rgba(0, 0, 0, 0.48);
+@@ -272,8 +370,8 @@ body[data-ds-dark-theme] {
+   --dsw-alias-brand-text: var(--dsw-static-neutral-bluish-50);
+   --dsw-alias-button-contrast-fill: var(--dsw-static-neutral-bluish-50);
+   --dsw-alias-button-elevated-fill: var(--dsw-static-neutral-bluish-750);
+-  --dsw-alias-button-floating-fill: var(--dsw-static-neutral-bluish-850);
+-  --dsw-alias-button-floating-hover: var(--dsw-static-neutral-bluish-800);
++  --dsw-alias-button-floating-fill: rgba(8, 28, 48, 0.78);
++  --dsw-alias-button-floating-hover: rgba(18, 52, 76, 0.8);
+   --dsw-alias-button-ghost-active-border: var(--dsw-static-neutral-bluish-600);
+   --dsw-alias-button-ghost-active-fill: var(--dsw-static-neutral-bluish-750);
+   --dsw-alias-button-ghost-active-hover: var(--dsw-static-neutral-bluish-700);
+@@ -300,8 +398,8 @@ body[data-ds-dark-theme] {
+   --dsw-alias-label-secondary: var(--dsw-static-neutral-bluish-300);
+   --dsw-alias-label-tertiary: var(--dsw-static-neutral-bluish-400);
+   --dsw-alias-markdown-citation: var(--dsw-static-neutral-bluish-800);
+-  --dsw-alias-markdown-code-block-banner: var(--dsw-static-neutral-bluish-850);
+-  --dsw-alias-markdown-code-block: var(--dsw-static-neutral-bluish-900);
++  --dsw-alias-markdown-code-block-banner: rgba(10, 25, 42, 0.94);
++  --dsw-alias-markdown-code-block: rgba(3, 10, 21, 0.9);
+   --dsw-alias-markdown-code-segment-selected: var(--dsw-static-neutral-bluish-800);
+   --dsw-alias-markdown-code-segment-unselected: var(--dsw-static-neutral-bluish-900);
+   --dsw-alias-markdown-inline-code: var(--dsw-static-neutral-bluish-850);
+@@ -322,17 +420,17 @@ body[data-ds-dark-theme] {
+   --dsw-alias-state-warn-primary: var(--dsw-static-amber-500);
+   --dsw-alias-state-warn-secondary: var(--dsw-static-amber-400);
+   --dsw-alias-state-warn-tertiary: var(--dsw-static-amber-900);
+-  --dsw-alias-toast-bg: var(--dsw-static-neutral-bluish-750);
+-  --dsw-alias-tooltip-bg: var(--dsw-static-neutral-bluish-750);
++  --dsw-alias-toast-bg: rgba(8, 27, 47, 0.9);
++  --dsw-alias-tooltip-bg: rgba(7, 23, 40, 0.92);
+   --dsw-specific-bubble-highlight: var(--dsw-static-neutral-bluish-750);
+   --dsw-specific-bubble: var(--dsw-static-neutral-bluish-850);
+-  --dsw-specific-input-major: var(--dsw-static-neutral-bluish-850);
++  --dsw-specific-input-major: var(--dsw-alias-bg-layer-3);
+   --dsw-specific-login-input: var(--dsw-static-neutral-bluish-900);
+   --dsw-specific-menu: var(--dsw-alias-bg-layer-3);
+-  --dsw-specific-selector: var(--dsw-static-neutral-bluish-800);
+-  --dsw-specific-sidebar-fill: var(--dsw-static-neutral-bluish-900);
++  --dsw-specific-selector: var(--dsw-alias-bg-layer-2);
++  --dsw-specific-sidebar-fill: var(--dsw-alias-bg-layer-1);
+   --dsw-specific-sidebar-nav-item-active-accent: var(--dsw-static-neutral-bluish-800);
+   --dsw-specific-sidebar-nav-item-active: var(--dsw-static-neutral-bluish-750);
+   --dsw-specific-sidebar-nav-item-hover: var(--dsw-static-neutral-bluish-850);
+-  --dsw-specific-tip: var(--dsw-static-neutral-bluish-800);
++  --dsw-specific-tip: var(--dsw-alias-bg-layer-2);
+ }
+diff --git a/packages/client/ui-tool/src/client/tool/components/ToolRow.module.css b/packages/client/ui-tool/src/client/tool/components/ToolRow.module.css
+index 9d9bce9eeda15763e133e28ea7c503959483ede7..a5dc74fc1df01d98f39e6af1e315af28b80babc8 100644
+--- a/packages/client/ui-tool/src/client/tool/components/ToolRow.module.css
++++ b/packages/client/ui-tool/src/client/tool/components/ToolRow.module.css
+@@ -190,6 +190,7 @@
+   border: 1px solid var(--dsw-alias-border-l1);
+   border-radius: 12px;
+   background: var(--dsw-alias-markdown-code-block);
++  box-shadow: var(--dsh-glass-inner-highlight);
+   font: var(--dsw-font-markdown-code-block-small);
+ }
+ 
+diff --git a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
+index 0cd1f51cd21307cd369c8310dac423381e9377de..da9a14955b3be4bd2b78fd571e763536edd3333d 100644
+--- a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
++++ b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
+@@ -1187,6 +1187,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+       'client-locale LanguageRow id \'language\'',
+       'client-ui-agent-preset AgentPresetRow id \'agent-preset\'',
+       'client-ui-conversation EnterBehaviorRow id \'composer-enter\'',
++      'client-ui-liquid-glass LiquidSettingsRow id \'liquid-glass\'',
+       'client-ui-permission-presets PermissionRow id \'permission\'',
+       'client-ui-theme AppearanceRow id \'appearance\'',
+     ],
+@@ -1539,6 +1540,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+     slotInject: '',
+     declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
+     occupants: [
++      'client-ui-liquid-glass QuickLiquidControl id \'liquid-glass\'',
+       'client-ui-cordis CordisPanel id \'cordis-panel\'',
+     ],
+     replaceRisk: 'none',
+diff --git a/packages/host/apiproxy/README.i18n.yaml b/packages/host/apiproxy/README.i18n.yaml
+index 2ae197d230d7d7e277b99a213907aafd69f8cd4a..f747b37c6dbb9167d9eeaa6f04a4207118a8812d 100644
+--- a/packages/host/apiproxy/README.i18n.yaml
++++ b/packages/host/apiproxy/README.i18n.yaml
+@@ -2,5 +2,5 @@
+ # side as of the last confirmed-consistent state. Both languages carry equal authority;
+ # after editing either side, bring the other along and re-record with:
+ #   pnpm run verify-translation-pairing --write packages/host/apiproxy/README.md
+-README.md: b7dee9488c1b123172c225d4d4235bdb3c76911d
+-README.zh.md: 46835a84254c4bbc45300a18d29aae5a6ac66f14
++README.md: 85e1fed39364e1395411dba3067c494b12d45d72
++README.zh.md: 92bf14b70de5c4c89fae707cff5d975b8f0e761b
+diff --git a/packages/host/apiproxy/README.md b/packages/host/apiproxy/README.md
+index b7dee9488c1b123172c225d4d4235bdb3c76911d..85e1fed39364e1395411dba3067c494b12d45d72 100644
+--- a/packages/host/apiproxy/README.md
++++ b/packages/host/apiproxy/README.md
+@@ -60,6 +60,8 @@ The `command.*` and `skill.*` domains expose the host command registry and skill
+ 
+ The `settings.*`, `credentials.*`, and `llm.*` domains are the configuration-page wire. The settings domain serves the namespaces addressed by registered configurable providers (`ctx.llm.listConfigurableProviders()`) plus a small explicit allowlist — the Web preferences `locale`, `permission`, `ui-conversation`, and `ui-theme`, the host-plane plugin sections `agent-loop`, `bash`, and `web-search-deepseek` that the plugin configuration page edits, and the product-owned `ui-onboarding`; adding a Settings registration alone never makes it remotely readable or writable. Any other namespace answers `settings-not-exposed` — the same answer an unregistered namespace gets, so no caller can enumerate the registry by probing. `settings.describe` returns each exposed namespace's serialized schemastery schema, redacted layered values (resolved/`base`/`user` — a field's presence in `user` marks it user-overridden), the `secrets` slot list, the section's `revision`, and the boolean `hasDocument` capability flag. The browser receives no Host path: pathless `settings.openDocument` asks the provider to materialize its document and then hands the Host-resolved result to the native opener, so no browser payload can select any filesystem target. `settings.update`/`settings.replace` write the user layer; `settings.mutate` applies path ops (`set`/`unset`) against the section as stored, which is the removal path for a client holding the redacted view — rebuilding a section from it and replacing wholesale would delete the secrets the wire never returned. Any write may carry `expectedRevision`; a stale one answers `settings-conflict` with both revisions rather than overwriting the writer that landed first, and every other seam refusal folds into `settings-rejected`. Secret-role values never ride any response in any layer; a secret crosses the wire in exactly one direction — inside an `update`/`mutate` payload or `credentials.set`. `credentials.describe` returns value-free views (`configured`/`source`/`writable`), and `credentials.set`/`credentials.unset` map a shadowed-reference refusal onto `credential-rejected`. `llm.providers` merges the configurable-provider directory with live routes (dormant entries carry `active: false`; undeclared live routes append with no settings address) and `llm.models` is the session-independent catalog. `llm.discoverModels` interrogates a provider endpoint the page is still drafting: `settingsNs` selects the adapter family that knows how to read the listing, and the endpoint, protocol, and key come from the form rather than from storage. It writes nothing — the reply is candidates, and only a later `settings.mutate` decides what a route serves — so its `apiKey` is the third payload on which a secret may ride, alongside `settings.update`/`mutate` and `credentials.set`. The host never stores or returns it; like the other two it does ride the client's outgoing envelope, which `subscribeEnvelopes()` observers can see, and redacting that tap is a configuration-plane-wide change rather than this method's to make alone. Every refusal (an unserved namespace, a protocol with no readable listing, an unreachable endpoint, a rejected credential) folds into `model-discovery-failed`, whose message is the adapter's own text and whose details name the endpoint asked but never the credential offered. Invalidations keep every surface converged without polling. `settings/document-updated` and `credentials/updated` ride the verbatim forwarded-event frame (see below), so a raw settings change whose resolved value is unchanged still reaches clients, and a credential invalidation still carries reference names only, never values. `llm/adapters-updated` is forwarded beside `settings/document-updated`; concrete model consumers subscribe to both owner events directly because topology commits and settings documents can independently change their directories. The browser carrier restricts the whole configuration plane, reads and native actions included (`settings.describe`/`openDocument`/`update`/`replace`/`mutate`, `credentials.describe`/`set`/`unset`), to loopback same-origin requests — the `host.pickDirectory` privileged set. A composition without a settings or credential provider answers those domains with an actionable `internal` error naming the missing plugin.
+ 
++The Web preference allowlist also includes `ui-liquid-glass`, whose browser controls persist the Fluid presentation and workload fields without exposing any unrelated Settings namespace.
++
+ ## Carrier layer (`/client` + root)
+ 
+ `AbstractApiClient` holds every protocol invariant — rpcId minting, envelope wrap/unwrap, zod parsing, SSE frame decoding, unary timeout, microtask-batched envelope observation (`subscribeEnvelopes`) — while platform subclasses supply only the `doFetch` transport aspect. `InProcessApiClient` over `toFetchHandler(api)` remains the isomorphic point for callers and carrier tests that need the full wire serialization/validation path without a network. Product `dsh --profile headless` is a direct core entry point and does not mount this package.
+diff --git a/packages/host/apiproxy/README.zh.md b/packages/host/apiproxy/README.zh.md
+index 46835a84254c4bbc45300a18d29aae5a6ac66f14..92bf14b70de5c4c89fae707cff5d975b8f0e761b 100644
+--- a/packages/host/apiproxy/README.zh.md
++++ b/packages/host/apiproxy/README.zh.md
+@@ -60,6 +60,8 @@ Workspace 列表与 Session 列表是相互独立的重连基线。`workspace.cr
+ 
+ `settings.*`、`credentials.*` 与 `llm.*` 领域是配置页协议。settings 领域服务于已注册可配置提供方所指向的 namespace（`ctx.llm.listConfigurableProviders()`），并额外服务于一份小型、显式的 allowlist——Web 偏好 `locale`、`permission`、`ui-conversation` 与 `ui-theme`、插件配置页所编辑的宿主平面插件分节 `agent-loop`、`bash` 与 `web-search-deepseek`，以及产品持有的 `ui-onboarding`；仅新增一项 Settings 注册，绝不会使其可被远程读取或写入。其他任何 namespace 都只会得到 `settings-not-exposed`——未注册的 namespace 得到的是同一个答复，因此没有调用方能靠逐个探测把注册表枚举出来。`settings.describe` 为每个已暴露 namespace 提供其序列化 schemastery schema、脱敏后的分层值（resolved/`base`/`user`——字段出现在 `user` 中即标记其被用户覆盖）、`secrets` 槽位列表、该分节的 `revision`，以及布尔型 `hasDocument` 能力标志。浏览器不会收到 Host 路径：无路径参数的 `settings.openDocument` 会请求提供方准备文档，再把由 Host 解析出的结果交给原生打开器，因此任何浏览器载荷都无法选择任意文件系统目标。`settings.update`/`settings.replace` 写入用户层；`settings.mutate` 则在已存分节上施加路径 op（`set`/`unset`），这是持有脱敏视图的客户端的删除路径——据此重建分节再整体替换，会删掉协议从未回传过的那些机密。任何写入都可携带 `expectedRevision`；陈旧的期望值会以 `settings-conflict` 连同两个 revision 作答，而不是覆盖先落地的那个写方，其余每种 seam 拒绝则折叠为 `settings-rejected`。secret 角色的值绝不在任何一层搭乘任何响应；secret 只沿一个方向跨越协议——在 `update`/`mutate` 载荷或 `credentials.set` 之内。`credentials.describe` 返回不含值的视图（`configured`/`source`/`writable`），`credentials.set`/`credentials.unset` 则把被遮蔽引用的拒绝映射为 `credential-rejected`。`llm.providers` 把可配置提供方目录与存活路由合并（休眠条目携带 `active: false`；未声明的存活路由追加在后，不带 settings 地址），`llm.models` 则是与会话无关的目录。`llm.discoverModels` 询问页面尚在起草的提供方端点：`settingsNs` 选出懂得读取该列表的适配器家族，端点、协议与密钥则来自表单而非存储。它什么都不写——回复是候选，只有随后的 `settings.mutate` 才决定路由服务什么——因此其 `apiKey` 是 secret 可以搭乘的第三个载荷（另两个是 `settings.update`/`mutate` 与 `credentials.set`），且绝不被存储或回显。host 从不存储或回传它；与另两者一样，它确实会搭乘客户端的出站信封，`subscribeEnvelopes()` 的观察者能看到——为该 tap 做脱敏是整个配置面的改动，而非本方法一家的事。每一种拒绝（无人服务的 namespace、没有可读列表的协议、不可达端点、被拒凭据）都折叠为 `model-discovery-failed`，其消息是适配器自己的文本，details 点名被询问的端点，绝不点名所提供的凭据。失效通知让每个面无需轮询即保持收敛。`settings/document-updated` 与 `credentials/updated` 搭乘原样转发事件帧（见下），因此解析值未变的原始设置变更同样能到达客户端，凭据失效通知也仍然只带引用名、绝不带值。`llm/adapters-updated` 与 `settings/document-updated` 一并原样转发；具体模型消费方直接订阅这两个 owner 事件，因为拓扑提交和设置文档都能独立改变其目录。浏览器载体把整个配置面（含读取与原生操作：`settings.describe`/`openDocument`/`update`/`replace`/`mutate` 与 `credentials.describe`/`set`/`unset`）限制为仅接受来自回环地址的同源请求——即 `host.pickDirectory` 所在的特权集合。未装 settings 或凭据提供方的组合会以指名缺失插件、包含解决建议的 `internal` 错误应答这些领域。
+ 
++Web 偏好 allowlist 还包括 `ui-liquid-glass`；浏览器控制项通过该 namespace 持久化 Fluid 的显示与负载字段，同时不会暴露其他 Settings namespace。
++
+ ## 载体层（`/client` + 根路径）
+ 
+ `AbstractApiClient` 持有全部协议不变量：签发 rpcId、包装／解包信封、Zod 解析、SSE 帧解码、一元请求超时，以及按微任务批处理的信封观测（`subscribeEnvelopes`）；平台子类只提供 `doFetch` 传输环节。`InProcessApiClient` 以 `toFetchHandler(api)` 为基础，仍是同构接点：它运行完整的协议序列化与校验路径而不经过网络，供需要该路径的调用方和载体测试使用。产品的 `dsh --profile headless` 是直连 core 的入口，不挂载本包。
+diff --git a/packages/host/apiproxy/src/api-proxy.ts b/packages/host/apiproxy/src/api-proxy.ts
+index bda99362b6899937c4bf90a8159643fa42106880..63462f1e577bfc33ec7d83eb205d9e52ee182d31 100644
+--- a/packages/host/apiproxy/src/api-proxy.ts
++++ b/packages/host/apiproxy/src/api-proxy.ts
+@@ -124,7 +124,8 @@ const DEFAULT_MAX_MESSAGES = 50
+  * is deferred work.
+  */
+ const WEB_SETTINGS_NAMESPACES = [
+-  'agent-loop', 'shell', 'locale', 'permission', 'ui-conversation', 'ui-theme', 'web-search-deepseek',
++  'agent-loop', 'shell', 'locale', 'permission', 'ui-conversation', 'ui-liquid-glass', 'ui-theme',
++  'web-search-deepseek',
+ ] as const
+ 
+ /** Provider work budget: at most 100 calls and 2,000 inspected hits. */
+diff --git a/packages/host/apiproxy/tests/api-proxy-config.spec.ts b/packages/host/apiproxy/tests/api-proxy-config.spec.ts
+index d4ba7b374b894de350dbdc444ef3e4aff910084a..02cbb37299e911d4088449ef9f65f16875d2fb91 100644
+--- a/packages/host/apiproxy/tests/api-proxy-config.spec.ts
++++ b/packages/host/apiproxy/tests/api-proxy-config.spec.ts
+@@ -414,10 +414,13 @@ describe('settings domain', () => {
+     ctx.settings.register(settingsNamespace('ui-theme'), z.object({
+       preference: z.union(['light', 'dark', 'system']).default('system'),
+     }))
++    ctx.settings.register(settingsNamespace('ui-liquid-glass'), z.object({
++      brightness: z.number().min(35).max(120).default(78),
++    }))
+     const api = createApiProxy(ctx, DEFAULTS)
+     expect(expectOk(await api.settings.describe(request({}))).namespaces.map(view => view.ns))
+-      .toEqual(['ui-onboarding', 'ui-theme'])
+-    const frames = await collectHost(api, ['host/remote-event'], 2, async () => {
++      .toEqual(['ui-onboarding', 'ui-theme', 'ui-liquid-glass'])
++    const frames = await collectHost(api, ['host/remote-event'], 3, async () => {
+       expectOk(await api.settings.mutate(request({
+         ns: 'ui-onboarding',
+         ops: [{ op: 'set', path: ['welcomeNoticeVersion'], value: 'v1' }],
+@@ -426,8 +429,16 @@ describe('settings domain', () => {
+         ns: 'ui-theme',
+         ops: [{ op: 'set', path: ['preference'], value: 'dark' }],
+       })))
++      expectOk(await api.settings.mutate(request({
++        ns: 'ui-liquid-glass',
++        ops: [{ op: 'set', path: ['brightness'], value: 42 }],
++      })))
+     })
+-    expect(frames).toEqual([forwardedSettings('ui-onboarding'), forwardedSettings('ui-theme')])
++    expect(frames).toEqual([
++      forwardedSettings('ui-onboarding'),
++      forwardedSettings('ui-theme'),
++      forwardedSettings('ui-liquid-glass'),
++    ])
+   })
+ 
+   it('serves the agent-preset namespace, so a browser preset picker can persist its choice', async () => {
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 1490a0f9f76e7a9df847a9946782c1097483792d..63d5bf7897217b2f478a5f74633d8c1af92224de 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -1315,6 +1315,9 @@ importers:
+       '@deepseek-ai/dsh-client-ui-layout':
+         specifier: workspace:^
+         version: link:../../client/ui-layout
++      '@deepseek-ai/dsh-client-ui-liquid-glass':
++        specifier: workspace:^
++        version: link:../../client/ui-liquid-glass
+       '@deepseek-ai/dsh-client-ui-message-feedback':
+         specifier: workspace:^
+         version: link:../../client/ui-message-feedback
+@@ -2130,6 +2133,49 @@ importers:
+         specifier: ^18.2.0
+         version: 18.3.1
+ 
++  packages/client/ui-liquid-glass:
++    dependencies:
++      '@deepseek-ai/dsh-settings':
++        specifier: workspace:^
++        version: link:../../settings/settings
++      '@deepseek-ai/schemastery':
++        specifier: link:../../../vendor/schemastery
++        version: link:../../../vendor/schemastery
++    devDependencies:
++      '@deepseek-ai/cordis':
++        specifier: workspace:^
++        version: link:../../../vendor/cordis
++      '@deepseek-ai/dsh-client-locale':
++        specifier: workspace:^
++        version: link:../locale
++      '@deepseek-ai/dsh-client-runtime':
++        specifier: workspace:^
++        version: link:../runtime
++      '@deepseek-ai/dsh-client-test-runtime':
++        specifier: workspace:^
++        version: link:../../test-support/client-runtime
++      '@deepseek-ai/dsh-client-ui-primitives':
++        specifier: workspace:^
++        version: link:../ui-primitives
++      '@deepseek-ai/dsh-client-ui-settings':
++        specifier: workspace:^
++        version: link:../ui-settings
++      '@deepseek-ai/dsh-client-ui-sidebar':
++        specifier: workspace:^
++        version: link:../ui-sidebar
++      '@deepseek-ai/dsh-client-ui-slots':
++        specifier: workspace:^
++        version: link:../ui-slots
++      '@deepseek-ai/dsh-invariants':
++        specifier: workspace:^
++        version: link:../../runtime-diagnostics/invariants
++      '@types/react':
++        specifier: ~18.3.1
++        version: 18.3.31
++      react:
++        specifier: ^18.2.0
++        version: 18.3.1
++
+   packages/client/ui-message-feedback:
+     devDependencies:
+       '@deepseek-ai/cordis':
+diff --git a/scripts/verify-package-readme-model-experience.ts b/scripts/verify-package-readme-model-experience.ts
+index d38b4743c52c6562831d6f79ceab942dab9e8e45..f3272eb0f5ed49b3f0fa5a91d01b2e8cd834efa0 100644
+--- a/scripts/verify-package-readme-model-experience.ts
++++ b/scripts/verify-package-readme-model-experience.ts
+@@ -89,6 +89,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
+   'packages/client/ui-directory-picker-browse': { kind: 'none', reason: 'Browser-side directory-browsing surface; registers nothing model-facing.' },
+   'packages/client/ui-directory-picker-native': { kind: 'none', reason: 'Browser-side surface driving the host OS chooser; registers nothing model-facing.' },
+   'packages/client/ui-theme': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },
++  'packages/client/ui-liquid-glass': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },
+   'packages/client/ui-settings': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },
+   'packages/client/ui-settings-general': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },
+   'packages/client/ui-settings-models': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },
+diff --git a/tsconfig.client.json b/tsconfig.client.json
+index e599f76f1b05a5b73b7d8f7775573982101ad9fc..5a2dadc7409881b8b45616b0f36ed571e7ffade8 100644
+--- a/tsconfig.client.json
++++ b/tsconfig.client.json
+@@ -87,6 +87,7 @@
+     { "path": "./packages/client/ui-trajectory" },
+     { "path": "./packages/session-query/session-log-export" },
+     { "path": "./packages/client/ui-theme" },
++    { "path": "./packages/client/ui-liquid-glass" },
+     { "path": "./packages/client/ui-settings" },
+     { "path": "./packages/client/ui-settings-general" },
+     { "path": "./packages/client/ui-settings-models" },

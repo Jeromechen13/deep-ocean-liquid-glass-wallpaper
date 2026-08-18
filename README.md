@@ -2,6 +2,25 @@
 
 一个面向浏览器和 Windows Lively Wallpaper 的深海液态壁纸：深黑蓝底色、克制的 Cyan/Aqua/Blue 流体、缓慢 ambient flow 和适度鼠标扰动。它最初作为 DeepSeek Harness Web 的 Liquid Glass 背景集成，现已整理为不依赖 Harness 核心运行时的独立实现。
 
+## Complete DeepSeek Harness installation
+
+需要获得与原始改造相同的完整 Harness UI 时，请使用版本化安装包，而不是轻量适配器。完整包包含 Harness 内滑块设置、Host 持久化、Sidebar、Composer、Model Selector、Dropdown、Modal、Tool Cards、Code/Terminal 等组件级 Glass 样式，以及 Fluid Canvas 的完整生命周期。
+
+```powershell
+git clone https://github.com/Jeromechen13/deep-ocean-liquid-glass-wallpaper.git
+git clone https://github.com/deepseek-ai/deepseek-harness.git
+git -C .\deepseek-harness checkout 47f943859bef60e4160492346772ded9b24f765a
+.\deep-ocean-liquid-glass-wallpaper\harness\install.ps1 -HarnessPath .\deepseek-harness
+```
+
+macOS/Linux 使用：
+
+```sh
+sh ./deep-ocean-liquid-glass-wallpaper/harness/install.sh ./deepseek-harness
+```
+
+完整兼容范围、卸载方法和参数说明见 [`harness/README.md`](harness/README.md)。
+
 ## Features
 
 - WebGL/WebGL2 fluid simulation with a fixed deep-ocean palette; no rainbow color generation.
@@ -28,6 +47,7 @@ src/liquid-glass.css                           Glass tokens, surfaces, and layer
 index.html                                      Browser/Lively entry
 demo/                                           Standalone preview and controls
 integrations/deepseek-harness/                 Optional Cordis skin package
+harness/                                        Complete versioned Harness patch and installers
 THIRD_PARTY_NOTICES.md                         Attribution and license boundaries
 ```
 
@@ -47,7 +67,7 @@ window.__DSH_LIQUID_FLUID__.setEnabled(false);
 window.__DSH_LIQUID_FLUID_CLEANUP__?.();
 ```
 
-Use the Harness adapter under `integrations/deepseek-harness/` when the page is loaded by DeepSeek Harness. It owns startup, HMR cleanup, the canvas, stylesheet, and engine script; copy the engine into the Harness web public directory as described in that adapter's README.
+Use `harness/install.ps1` or `harness/install.sh` for the complete Harness UI. The adapter under `integrations/deepseek-harness/` is intentionally lightweight and provides only lifecycle-owned background layering for advanced manual integrations.
 
 ## Parameters
 

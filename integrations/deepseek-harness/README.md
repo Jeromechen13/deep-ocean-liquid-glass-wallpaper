@@ -1,4 +1,6 @@
-# DeepSeek Harness integration
+# Lightweight DeepSeek Harness integration
+
+> This is the background-only adapter. For the complete Harness UI, settings sliders, persistence, and component-level Glass redesign, use [`../../harness/README.md`](../../harness/README.md).
 
 This optional Cordis client plugin mounts one `#dsh-liquid-background` canvas behind the Harness root, injects the base Deep Ocean glass material, loads the shared Fluid runtime, and removes all owned DOM, listeners, animation frames, and WebGL resources on unload or HMR.
 
