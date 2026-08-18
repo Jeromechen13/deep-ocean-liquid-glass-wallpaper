@@ -2,6 +2,10 @@
 
 一个面向浏览器和 Windows Lively Wallpaper 的深海液态壁纸：深黑蓝底色、克制的 Cyan/Aqua/Blue 流体、缓慢 ambient flow 和适度鼠标扰动。它最初作为 DeepSeek Harness Web 的 Liquid Glass 背景集成，现已整理为不依赖 Harness 核心运行时的独立实现。
 
+![DeepSeek Harness Deep Ocean Liquid Glass preview](assets/deepseek-harness-liquid-glass.png)
+
+这是完整 Harness 改造后的空白会话预览：Fluid 位于 UI 后方，Sidebar、Composer 和主界面使用统一的 Deep Ocean Glass 材质。
+
 ## Complete DeepSeek Harness installation
 
 需要获得与原始改造相同的完整 Harness UI 时，请使用版本化安装包，而不是轻量适配器。完整包包含 Harness 内滑块设置、Host 持久化、Sidebar、Composer、Model Selector、Dropdown、Modal、Tool Cards、Code/Terminal 等组件级 Glass 样式，以及 Fluid Canvas 的完整生命周期。

@@ -2,6 +2,8 @@
 
 This distribution applies the complete Deep Ocean Liquid Glass implementation to a clean DeepSeek Harness checkout. It is not the lightweight background-only adapter: the patch includes the Host-backed settings plugin, sidebar quick controls, General Settings panel, component-level Glass materials, Fluid engine, Web bundle registration, persistence allowlist, tests, and required documentation metadata.
 
+![DeepSeek Harness Deep Ocean Liquid Glass preview](../assets/deepseek-harness-liquid-glass.png)
+
 ## Supported Harness revision
 
 The release was assembled and tested against:
