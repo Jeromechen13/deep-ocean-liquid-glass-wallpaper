@@ -2,35 +2,35 @@
 
 # Deep Ocean Liquid Glass Wallpaper
 
-A deep-ocean WebGL fluid wallpaper and Liquid Glass UI for browsers, Windows Lively Wallpaper, and DeepSeek Harness.
+Calm Deep Ocean WebGL fluid, reusable Liquid Glass materials, and a complete DeepSeek Harness UI integration.
 
-**English** | [简体中文](./README_CN.md)
+**English** | [简体中文](./README.zh-CN.md)
 
 </div>
 
-A deep-ocean liquid wallpaper designed for browsers and Windows Lively Wallpaper, featuring a near-black navy background, restrained Cyan/Aqua/Blue fluid colors, slow ambient flow, and subtle pointer interaction.
-
-It was originally developed as the Liquid Glass background integration for DeepSeek Harness and has since been extracted into a standalone implementation that does not depend on the Harness core runtime.
-
 ![DeepSeek Harness Deep Ocean Liquid Glass preview](assets/deepseek-harness-liquid-glass.png)
 
-The image above shows the completed DeepSeek Harness integration in an empty conversation. The fluid canvas stays behind the interface, while the Sidebar, Composer, and main UI use a unified Deep Ocean Glass material system.
+The preview shows the complete Harness integration: the Fluid canvas stays behind the application, while the Sidebar, Composer, selectors, menus, dialogs, tools, code, and terminal surfaces share one restrained Deep Ocean Glass system.
 
-## Complete DeepSeek Harness installation
+## What is included
 
-If you want the full DeepSeek Harness experience shown above, use the versioned installation package instead of the lightweight integration adapter.
+- A standalone WebGL/WebGL2 fluid wallpaper for browsers and Windows Lively Wallpaper.
+- A fixed near-black Navy → Deep Blue → Cyan/Aqua palette with no rainbow generation.
+- Calm ambient flow, pointer interaction, capped DPR, hidden-tab pause, and Reduced Motion support.
+- Reusable `glass-soft`, `glass`, `glass-strong`, and `glass-pill` CSS materials.
+- A complete versioned DeepSeek Harness patch with built-in controls and Host-backed persistence.
+- A lightweight Cordis adapter for developers who only need the background lifecycle.
+- Static Deep Ocean and higher-opacity Glass fallbacks when WebGL or `backdrop-filter` is unavailable.
 
-The complete package includes:
+## Use it with DeepSeek Harness
 
-* Built-in Harness sliders and settings
-* Host-side configuration persistence
-* Sidebar Liquid Glass styling
-* Composer Liquid Glass styling
-* Model Selector styling
-* Dropdown and Modal styling
-* Tool Card styling
-* Code and Terminal styling
-* Full Fluid Canvas lifecycle management
+This is the recommended path if you want the complete UI shown in the preview. The installer changes only the 63 Liquid Glass integration files listed in [`harness/changed-files.txt`](harness/changed-files.txt); it does not redistribute the complete Harness repository.
+
+The tested Harness revision is:
+
+```text
+47f943859bef60e4160492346772ded9b24f765a
+```
 
 ### Windows
 
@@ -40,170 +40,96 @@ git clone https://github.com/deepseek-ai/deepseek-harness.git
 
 git -C .\deepseek-harness checkout 47f943859bef60e4160492346772ded9b24f765a
 
-.\deep-ocean-liquid-glass-wallpaper\harness\install.ps1 -HarnessPath .\deepseek-harness
+powershell -ExecutionPolicy Bypass `
+  -File .\deep-ocean-liquid-glass-wallpaper\harness\install.ps1 `
+  -HarnessPath .\deepseek-harness
+
+cd .\deepseek-harness
+pnpm dsh web
 ```
 
-### macOS / Linux
+### macOS and Linux
 
 ```sh
 git clone https://github.com/Jeromechen13/deep-ocean-liquid-glass-wallpaper.git
 git clone https://github.com/deepseek-ai/deepseek-harness.git
 
 git -C ./deepseek-harness checkout 47f943859bef60e4160492346772ded9b24f765a
-
 sh ./deep-ocean-liquid-glass-wallpaper/harness/install.sh ./deepseek-harness
+
+cd ./deepseek-harness
+pnpm dsh web
 ```
 
-For the complete compatibility range, uninstall instructions, installer parameters, and additional notes, see [`harness/README.md`](harness/README.md).
+The installer verifies the patch SHA-256 and runs `git apply --check` before changing Harness. It refuses a dirty worktree and an unsupported Harness revision by default, then installs dependencies and runs the complete build. See the [complete Harness guide](harness/README.md) for compatibility flags and uninstall instructions.
 
-## Features
+### Controls inside Harness
 
-* WebGL/WebGL2 fluid simulation with a fixed Deep Ocean palette
-* No rainbow or uncontrolled random color generation
-* Near-black navy background with restrained Cyan/Aqua/Blue fluid tones
-* Slow ambient motion designed for long-running desktop use
-* Pointer and touch interaction with configurable disturbance strength
-* A single owned fluid canvas
-* Device pixel ratio capped at `1.5` for a balance between quality and performance
-* Automatic pause when the browser tab becomes hidden
-* Reduced workload under `prefers-reduced-motion`
-* Runtime controls for:
+The quick panel appears in the Sidebar footer. The complete panel is under **Settings → General → Deep Ocean fluid background**.
 
-  * Opacity
-  * Brightness
-  * Flow speed
-  * Pointer force
-  * Bloom
-  * Palette
-  * Quality
-  * Enable / disable
-* Reusable Liquid Glass CSS materials:
+| Setting | Default | Range or values |
+| --- | ---: | --- |
+| Enabled | on | on/off |
+| Opacity | 48 | 0–100 |
+| Brightness | 78 | 35–120 |
+| Flow speed | 60 | 0–100 |
+| Pointer force | 55 | 0–100 |
+| Bloom | 30 | 0–100 |
+| Palette | Ocean | Abyss / Ocean / Cyan |
+| Quality | Balanced | Eco / Balanced / High |
 
-  * `glass-soft`
-  * `glass`
-  * `glass-strong`
-  * `glass-pill`
-* Higher-opacity fallback when `backdrop-filter` is unavailable
-* Graceful WebGL failure handling
-* Static Deep Ocean CSS gradient remains available when WebGL cannot start
-* Standalone browser demo
-* Windows Lively Wallpaper support
-* Optional DeepSeek Harness integration
-* Full versioned DeepSeek Harness patch installer
+Changes preview immediately and persist through Harness's `ui-liquid-glass` settings namespace.
 
-## Quick preview
+## Preview the standalone wallpaper
 
-No build step or package installation is required.
-
-From the repository root, start a local HTTP server:
+No build or package installation is required:
 
 ```text
+git clone https://github.com/Jeromechen13/deep-ocean-liquid-glass-wallpaper.git
+cd deep-ocean-liquid-glass-wallpaper
 python -m http.server 8000
 ```
 
-Then open:
+Open `http://localhost:8000/`. The demo provides controls for opacity, brightness, flow speed, pointer force, bloom, palette, quality, pause/resume, and reset.
 
-```text
-http://localhost:8000/
-```
+## Use it with Lively Wallpaper
 
-The standalone demo includes controls for fluid intensity, opacity, brightness, flow speed, pointer interaction, bloom, palette, and simulation quality.
+1. Clone the repository or download its ZIP archive.
+2. Keep the repository directory structure intact.
+3. In [Lively Wallpaper](https://github.com/rocksdanister/lively), add the repository directory or its root `index.html`.
+4. Enable mouse input if pointer disturbance is not forwarded by the wallpaper host.
 
-For Windows desktop wallpaper usage, import the repository directory into [Lively Wallpaper](https://github.com/rocksdanister/lively).
+The root page loads `demo/`, which in turn uses the shared assets under `src/`.
 
-The root `index.html` acts as the self-contained wallpaper/demo entry.
+## Embed it in another webpage
 
-## File structure
-
-```text
-deep-ocean-liquid-glass-wallpaper/
-├── assets/
-│   └── deepseek-harness-liquid-glass.png
-│
-├── src/
-│   ├── fluid-wallpaper.js
-│   └── liquid-glass.css
-│
-├── demo/
-│   └── ...
-│
-├── integrations/
-│   └── deepseek-harness/
-│       └── ...
-│
-├── harness/
-│   ├── install.ps1
-│   ├── install.sh
-│   ├── README.md
-│   └── ...
-│
-├── index.html
-├── README.md
-├── README_CN.md
-├── LICENSE
-└── THIRD_PARTY_NOTICES.md
-```
-
-Main files:
-
-```text
-src/fluid-wallpaper.js
-    WebGL fluid engine, rendering loop, configuration, and lifecycle runtime.
-
-src/liquid-glass.css
-    Deep Ocean palette, Liquid Glass tokens, surfaces, and layering.
-
-index.html
-    Browser and Lively Wallpaper standalone entry.
-
-demo/
-    Standalone preview interface and runtime controls.
-
-integrations/deepseek-harness/
-    Optional lightweight Cordis skin integration for DeepSeek Harness.
-
-harness/
-    Complete versioned DeepSeek Harness patch and installation scripts.
-
-THIRD_PARTY_NOTICES.md
-    Third-party attribution and license boundaries.
-```
-
-## Integrate into another page
-
-The fluid engine can also be embedded into another webpage without using DeepSeek Harness.
-
-First, create a canvas with the following ID:
-
-```html
-<canvas id="dsh-liquid-background"></canvas>
-```
-
-Then include the Liquid Glass stylesheet:
+Include the Glass stylesheet, create the owned canvas, and load the engine:
 
 ```html
 <link rel="stylesheet" href="./src/liquid-glass.css">
-```
 
-Load the fluid runtime:
+<canvas id="dsh-liquid-background" aria-hidden="true"></canvas>
 
-```html
 <script src="./src/fluid-wallpaper.js"></script>
 ```
 
-Once initialization is complete, the engine dispatches:
+Keep application content above the canvas:
 
-```text
-dsh-liquid-fluid-ready
+```css
+#dsh-liquid-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+}
 ```
 
-The runtime is then available through:
-
-```js
-window.__DSH_LIQUID_FLUID__
-```
-
-For example:
+The engine dispatches `dsh-liquid-fluid-ready` and exposes `window.__DSH_LIQUID_FLUID__`:
 
 ```js
 window.__DSH_LIQUID_FLUID__.updateConfig({
@@ -213,196 +139,51 @@ window.__DSH_LIQUID_FLUID__.updateConfig({
   palette: 'ocean',
   quality: 'balanced',
 });
+
+window.__DSH_LIQUID_FLUID__.setEnabled(false); // pause
+window.__DSH_LIQUID_FLUID__.setEnabled(true);  // resume
+window.__DSH_LIQUID_FLUID_CLEANUP__?.();       // dispose
 ```
 
-Disable the fluid canvas:
+Opacity and final brightness are canvas compositing controls:
 
 ```js
-window.__DSH_LIQUID_FLUID__.setEnabled(false);
+const canvas = document.getElementById('dsh-liquid-background');
+canvas.style.opacity = '0.48';
+canvas.style.filter = 'brightness(0.78) saturate(1.08)';
 ```
 
-Re-enable it:
+Apply reusable Glass materials with `dsh-glass-soft`, `dsh-glass`, `dsh-glass-strong`, or `dsh-glass-pill`.
 
-```js
-window.__DSH_LIQUID_FLUID__.setEnabled(true);
-```
-
-Clean up the runtime:
-
-```js
-window.__DSH_LIQUID_FLUID_CLEANUP__?.();
-```
-
-For the complete DeepSeek Harness UI integration, use:
+## Project layout
 
 ```text
-harness/install.ps1
+assets/                              Preview image
+demo/                                Standalone controls and preview
+src/fluid-wallpaper.js               WebGL engine and lifecycle runtime
+src/liquid-glass.css                 Glass tokens, surfaces, and layering
+harness/                              Complete versioned Harness installer
+integrations/deepseek-harness/        Lightweight Cordis adapter
+index.html                            Browser and Lively entry
+LICENSE                              MIT license notices
+THIRD_PARTY_NOTICES.md                Upstream attribution
 ```
 
-or:
+## Performance and fallback behavior
 
-```text
-harness/install.sh
-```
+- One owned canvas and one WebGL context.
+- DPR capped at `1.5`.
+- Eco `96/512`, Balanced `128/1024`, and High `192/1024` simulation/dye presets.
+- Animation paused while the document is hidden or the effect is disabled.
+- Lower ambient and pointer work under `prefers-reduced-motion`.
+- Quality changes rebuild framebuffers without creating another WebGL context.
+- WebGL failure leaves the static Deep Ocean gradient and host UI usable.
+- Missing backdrop filtering falls back to more opaque Glass surfaces.
 
-The adapter under:
-
-```text
-integrations/deepseek-harness/
-```
-
-is intentionally lightweight. It provides lifecycle-owned fluid background layering for advanced manual integrations, but does not reproduce the complete Harness UI modification.
-
-## Parameters
-
-| Parameter     | Range                 |  Default | Effect                                                   |
-| ------------- | --------------------- | -------: | -------------------------------------------------------- |
-| Opacity       | 0–100                 |       48 | Controls fluid canvas visibility                         |
-| Brightness    | 0–150                 |       78 | Controls final canvas brightness                         |
-| Flow speed    | 0–100                 |       60 | Controls ambient flow and simulation time scale          |
-| Pointer force | 0–100                 |       55 | Controls mouse/touch disturbance strength                |
-| Bloom         | 0–100                 |       30 | Controls restrained cyan edge glow                       |
-| Palette       | abyss / ocean / cyan  |    ocean | Selects the Deep Blue → Cyan color range                 |
-| Quality       | eco / balanced / high | balanced | Controls simulation, dye, pressure, and bloom resolution |
-
-## Liquid Glass materials
-
-The stylesheet exposes several reusable surface levels.
-
-### `glass-soft`
-
-Designed for large background surfaces that should remain visually subtle.
-
-### `glass`
-
-The default Liquid Glass material for general interface surfaces.
-
-### `glass-strong`
-
-A stronger material intended for important foreground UI such as modals, floating panels, and high-contrast surfaces.
-
-### `glass-pill`
-
-Designed for compact rounded controls, buttons, badges, and pill-shaped elements.
-
-The materials combine translucent tinting, edge highlights, internal reflections, blur, and controlled shadowing while preserving the Deep Ocean palette.
-
-When browser backdrop filtering is unavailable, the stylesheet automatically falls back to a more opaque surface so the interface remains readable.
-
-## Browser and performance notes
-
-Use a current version of Chromium, Firefox, or Safari with WebGL enabled.
-
-The runtime is intentionally designed to keep the effect visually active without turning the background into a high-load graphics benchmark.
-
-Performance-related behavior includes:
-
-* One WebGL context
-* One owned canvas
-* Device pixel ratio capped at `1.5`
-* Hidden-tab pause
-* Reduced workload when `prefers-reduced-motion` is enabled
-* Adjustable simulation quality
-* Optional bloom and shading
-* Graceful degradation when extensions are unavailable
-
-If WebGL initialization fails, the fluid engine does not block or break the host page.
-
-The static Deep Ocean CSS gradient remains active as the fallback background.
-
-If linear texture filtering or related WebGL capabilities are unavailable, optional rendering features such as bloom or shading may be reduced or disabled automatically.
-
-## Lively Wallpaper
-
-The repository can be used directly as a Windows Lively Wallpaper web wallpaper.
-
-1. Clone or download the repository.
-2. Open Lively Wallpaper.
-3. Add a new wallpaper.
-4. Select the repository directory or the root `index.html`.
-5. Launch the wallpaper.
-
-The standalone implementation does not require DeepSeek Harness.
-
-## DeepSeek Harness integration
-
-Two integration levels are provided.
-
-### Lightweight adapter
-
-Location:
-
-```text
-integrations/deepseek-harness/
-```
-
-This is intended for developers who already have their own Harness modification workflow and only want the Deep Ocean fluid background and lifecycle management.
-
-### Complete Harness patch
-
-Location:
-
-```text
-harness/
-```
-
-This reproduces the complete Deep Ocean Liquid Glass integration, including component-level UI materials and runtime controls.
-
-Because DeepSeek Harness may continue evolving upstream, the full patch is versioned against a known compatible Harness revision.
-
-The current documented revision is:
-
-```text
-47f943859bef60e4160492346772ded9b24f765a
-```
-
-Use the included installation scripts instead of manually copying individual files whenever possible.
-
-## Design philosophy
-
-The visual direction is intentionally restrained.
-
-This project is not intended to behave like a colorful RGB fluid visualizer. The background remains inside a narrow Deep Ocean spectrum built around:
-
-* Near-black navy
-* Deep blue
-* Cyan
-* Aqua
-* Controlled blue-white highlights
-
-Motion is deliberately slow and ambient.
-
-Pointer interaction temporarily disturbs the fluid, while the background returns to a calmer flow when the user stops interacting.
-
-The goal is to keep the wallpaper visually alive without competing with foreground text, code, terminals, dialogs, or application controls.
-
-## Failure behavior
-
-The fluid effect is treated as enhancement rather than a dependency.
-
-If any of the following happens:
-
-* WebGL is unavailable
-* WebGL context creation fails
-* Required texture capabilities are unavailable
-* Optional rendering extensions cannot be initialized
-* The fluid runtime encounters an unsupported environment
-
-the host interface should remain usable.
-
-The fallback is the static Deep Ocean gradient defined by the CSS layer.
+Strong GPU refraction is not enabled. Important surfaces use CSS Liquid Glass edge highlights, internal reflection, tint, blur, and floating shadows without adding per-component WebGL contexts or breaking hit testing.
 
 ## License and credits
 
-The fluid solver is based on Pavel Dobryakov's [WebGL-Fluid-Simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation), released under the MIT License.
+The Fluid solver is based on Pavel Dobryakov's [WebGL-Fluid-Simulation](https://github.com/PavelDoGreat/WebGL-Fluid-Simulation), released under the MIT License. The complete patch modifies selected files from [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), also under the MIT License.
 
-The original copyright notice is retained in the engine source.
-
-See:
-
-* [`LICENSE`](LICENSE)
-* [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-
-for license information, attribution, and third-party boundaries.
-
-The surrounding Deep Ocean palette, lifecycle management, configuration system, controls, Liquid Glass materials, DeepSeek Harness integration, and packaging are integration work provided by this repository.
+The original notices are retained in [`LICENSE`](LICENSE), the engine source, and [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
