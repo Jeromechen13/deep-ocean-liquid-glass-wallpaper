@@ -1,0 +1,11 @@
+{
+  "name": "deep-ocean-liquid-glass-wallpaper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A calm Deep Ocean WebGL fluid wallpaper with reusable Liquid Glass surfaces and a DeepSeek Harness lifecycle integration.",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/fluid-wallpaper.js && node --check demo/demo.js && node --check integrations/deepseek-harness/lib/client.js"
+  },
+  "license": "MIT"
+}

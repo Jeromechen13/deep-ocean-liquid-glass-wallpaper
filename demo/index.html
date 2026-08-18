@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Deep Ocean Liquid Glass</title>
+    <link rel="stylesheet" href="../src/liquid-glass.css">
+    <style>
+      .demo-shell { position: relative; z-index: 1; display: grid; place-items: center; min-height: 100vh; padding: 24px; box-sizing: border-box; }
+      .demo-panel { width: min(560px, 100%); padding: 28px; }
+      .demo-panel h1 { margin: 0 0 8px; font: 600 24px/1.2 system-ui, sans-serif; }
+      .demo-panel p { margin: 0 0 24px; color: rgba(214, 238, 250, .72); font: 14px/1.6 system-ui, sans-serif; }
+      .control { display: grid; grid-template-columns: 120px 1fr 42px; gap: 12px; align-items: center; margin: 12px 0; font: 13px system-ui, sans-serif; }
+      .control select, .control input[type="range"] { width: 100%; accent-color: #74d8f7; }
+      .control select { color: inherit; border: 1px solid var(--dsh-glass-border); border-radius: 8px; padding: 5px 8px; background: rgba(3, 15, 30, .6); }
+      .actions { display: flex; gap: 10px; margin-top: 24px; }
+      .actions button { cursor: pointer; border: 1px solid var(--dsh-glass-border); border-radius: var(--dsh-glass-radius-pill); padding: 9px 15px; background: rgba(153, 231, 255, .12); color: inherit; }
+      .actions button:hover { background: rgba(153, 231, 255, .2); }
+    </style>
+  </head>
+  <body class="deep-ocean-page">
+    <canvas id="dsh-liquid-background" aria-hidden="true"></canvas>
+    <main class="demo-shell">
+      <section class="demo-panel dsh-glass-strong" aria-labelledby="title">
+        <h1 id="title">Deep Ocean Liquid Glass</h1>
+        <p>Reusable fluid wallpaper runtime with calm motion, pointer disturbance, and a layered glass material.</p>
+        <label class="control"><span>Opacity</span><input id="opacity" type="range" min="0" max="100" value="48"><output for="opacity">48</output></label>
+        <label class="control"><span>Brightness</span><input id="brightness" type="range" min="0" max="150" value="78"><output for="brightness">78</output></label>
+        <label class="control"><span>Flow speed</span><input id="flowSpeed" type="range" min="0" max="100" value="60"><output for="flowSpeed">60</output></label>
+        <label class="control"><span>Pointer force</span><input id="pointerForce" type="range" min="0" max="100" value="55"><output for="pointerForce">55</output></label>
+        <label class="control"><span>Bloom</span><input id="bloom" type="range" min="0" max="100" value="30"><output for="bloom">30</output></label>
+        <label class="control"><span>Palette</span><select id="palette"><option value="abyss">Abyss</option><option value="ocean" selected>Ocean</option><option value="cyan">Cyan</option></select><output></output></label>
+        <label class="control"><span>Quality</span><select id="quality"><option value="eco">Eco</option><option value="balanced" selected>Balanced</option><option value="high">High</option></select><output></output></label>
+        <div class="actions"><button id="toggle" type="button">Pause fluid</button><button id="reset" type="button">Reset controls</button></div>
+      </section>
+    </main>
+    <script src="../src/fluid-wallpaper.js"></script>
+    <script type="module" src="./demo.js"></script>
+  </body>
+</html>

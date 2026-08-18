@@ -1,0 +1,11 @@
+{
+  "name": "dsh-liquid-wallpaper-skin",
+  "version": "1.0.0",
+  "description": "Lifecycle-owned Deep Ocean fluid background skin for DeepSeek Harness Web.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" }, "client": { "inject": [], "platform": "web" } },
+  "license": "MIT",
+  "files": ["lib", "cordis.patch.yml", "README.md"]
+}
